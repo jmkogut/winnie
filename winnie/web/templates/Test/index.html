@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <title>hello, winnie</title>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js"></script>
+
+        <style type="text/css">
+            body {
+                font-size: 1em;
+                background: #fff;
+                font-family: sans-serif;
+            }
+
+            * {
+                margin: 0px;
+                padding: 0px;
+            }
+            
+            #main {
+                position:absolute;
+                left:50%;
+                top: 20px;
+                margin-left: -40%;
+                width: 80%;
+            }
+
+            #viewport {
+                margin: 30px 0px;
+                background: #eee;
+                border: 1px solid #bbb;
+                padding: 1em;
+                font-family: monospace;
+                
+
+                height: 250px;
+                overflow: hidden;
+            }
+
+            #mode {
+                margin-bottom: -50px;
+                font-size: 0.9em;
+            }
+            #facts {
+                text-align: right;
+                font-size: 0.9em;
+                margin-top: 30px;
+                margin-bottom: -30px;
+            }
+
+            #main > p {
+                padding: 10px;
+                margin: 10px;
+            }
+            .subtle {
+                color: #aaa;
+            }
+            em.subtle {
+                color: #666;
+            }
+        </style>
+
+        <script type="text/javascript">
+            function lineparse(line) {
+                matches = document.nickre.exec(line);
+                
+                if (matches != null && matches.length == 2) {
+                    line = line.replace(matches[1], '<a href="nick/'+matches[1]+'">'+matches[1]+'</a>');
+                }
+
+                return line;
+            }
+            function pollChannel() {
+                $.getJSON(document.channel + "/since/" + document.laststamp + "/",
+                    function(data) {
+                        $.each(data.items, function(i,item){
+                            $("<p/>").html(lineparse((item.value))).appendTo("#viewportcontent");
+                            $("#viewport").animate({
+                                scrollTop: $("#viewportcontent").height()
+                            }, 10);
+                            document.laststamp = item.key;
+                            });
+
+                        setTimeout(pollChannel, 2000);
+                    });
+            }
+
+            function pollStats() {
+                $.getJSON("stats",
+                    function(data) {
+                        $.each(data.items, function(i,item){
+                            $("#"+item.key).text(item.value);
+                            });
+
+                        setTimeout(pollStats, 5000);
+                    });
+            }
+
+            $(document).ready(function(){
+                    document.laststamp = "null";
+                    document.channel = "{{ channel }}";
+
+                    $("#channel").text('#'+document.channel);
+                    document.nickre = new RegExp(".+? ([A-Za-z0-9_\\.\-]+)&gt; .+");
+
+                    pollChannel();
+                    pollStats();
+            });
+        </script>
+    </head>
+    <body>
+
+        <div id="main">
+            <h1>winnie</h1>
+            <h3 class="subtle"><em>Wonderously Intelligent Notions Insuring Education</em></h3>
+
+            <p>winnie is a bot, if you can call it that. It sits in IRC channels and gathers intelligence. If you ask her to speak, she will do her best to try and say something appropriate. Below is winnie in her natural environment.</p>
+            
+            <div id="mode">in <em id="channel"></em></div>
+            <div id="facts">winnie currently references <span id="pcount">0</span> intelligences from <span id="ccount">0</span> channels</div>
+            <div id="viewport"><div id="viewportcontent"></div></div>
+
+            <div id="chanlist">
+                
+            </div>
+
+        </div>
+
+    </body>
+</html>
+
+

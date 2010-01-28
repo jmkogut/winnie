@@ -1,0 +1,10 @@
+{
+    "items": [
+        {% for k,v in items %}
+            {
+                "key": "{{ k }}",
+                "value": "{{ v|addslashes }}"
+            },
+        {% endfor %}
+    ]
+}
