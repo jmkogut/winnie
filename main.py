@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python2.5
 
 """
 The primary startup script for winnie. Initializes

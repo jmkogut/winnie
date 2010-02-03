@@ -1,8 +1,9 @@
 from ircbot import SingleServerIRCBot
 
-from responders import Handler, Processor
+import responders
 
-from winnie.data.cache import Cache
+from winnie.util import debug
+from winnie.data.cache import Client
 from winnie.data.model import *
 from winnie import settings
 
@@ -22,7 +23,7 @@ class Communicator(object, SingleServerIRCBot):
         self.nick, address = settings.IRC
         SingleServerIRCBot.__init__(self, [address], self.nick, self.nick)
     
-        self.c = Cache(self.nick)
+        self.c = Client(self.nick)
 
         self.update_phrases()
 
@@ -55,8 +56,8 @@ class Communicator(object, SingleServerIRCBot):
         return random.choice(self.__dict__[category+'s']) % args
 
     def init_responders(self):
-        self.processor = Processor(self)    # Sends messages from the outgoing queue
-        self.handler = Handler(self)        # Response engine for phrases
+        self.processor = responders.Processor(self)    # Sends messages from the outgoing queue
+        self.handler = responders.Handler(self)        # Response engine for phrases
 
     def reload(self):
         """
@@ -147,7 +148,7 @@ class Communicator(object, SingleServerIRCBot):
                 thing.arguments()[0]
             ), thing.timestamp, 'in')
         else: #It's just a string
-            debug("[%s] %s" % thing, datetime.now(), urgency)
+            debug("[%s] %s" % (thing, datetime.now()), urgency)
 
     def message_handler(self, connection, event):
         event.timestamp = datetime.now()

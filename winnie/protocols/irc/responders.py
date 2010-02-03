@@ -1,10 +1,12 @@
 from winnie import settings
 from winnie.data.model import *
+from winnie.util import log, debug
 
 import time
 import random
 import threading
 import traceback
+from types import *
 
 class Processor(threading.Thread):
     """
@@ -97,7 +99,7 @@ class Handler(object):
         """
         def handler_wrapper(*args):
             self, connection, event = args
-            self.com.log("%s called handler with %s"%(event.source().split('!')[0],event.arguments()[0]))
+            self.com.log("%s called %s with %s"%(event.source().split('!')[0],method.__name__,event.arguments()[0]))
 
             resp = method(*args)
             if resp and len(resp) > 0:
@@ -163,21 +165,32 @@ class Handler(object):
             command = 'show'
 
         if command == 'show':
-            return "I am in %s mode" % self.get_mode(event.target())
+            mode = self.get_mode(event.target())
+            print "*!* "+mode
+            debug(mode)
+            statement = "I am in %s mode" % mode
+            debug(statement)
+            return statement
         elif command in ('shush', 'speak'):
             self.set_mode(event.target(), command)
+            return "Set mode to %s" % command
 
-    
+    @log
     def get_mode(self, channel):
-        if channel not in self.c.modes:
+        modes = self.c.modes
+        if type(modes) != DictType or channel not in modes:
             self.set_mode(channel, 'shush')
-            return 'shush'
-        else:
-            return self.c.modes[channel]
-
+            modes = self.c.modes
+        
+        return modes[channel]
+    @log
     def set_mode(self, channel, mode):
         if mode in ('shush', 'speak'):
-            self.c.modes[channel] = mode
+            modes = self.c.modes
+            if type(modes) is not DictType: modes = {}
+            modes[channel] = mode
+            self.c.modes = modes
+            print self.c.modes
 
         return "Going into %s mode" % mode
     @handler

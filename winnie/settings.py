@@ -10,7 +10,7 @@ LOGSIZE = 50
 
 # IRC settings
 IRC = (
-    'winnehs',                   # nick
+    'winniepooh',                   # nick
     ('irc.freenode.net', 6667)    # server
 )
 
@@ -20,7 +20,7 @@ IRC_CHANNELS = (
 )
 
 # The db connection string
-DATABASE = "mysql://db9:doobienine@dottru.net/factoids"
+DATABASE = "mysql://db9:doobienine@localhost/factoids"
 
 # Handler Prefix (for commands %channels, %help, etc)
-HANDLER_PREFIX = '!'
+HANDLER_PREFIX = '%'

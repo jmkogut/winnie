@@ -1,10 +1,11 @@
-from winnie.debug import printme
-from winnie.util import debug, singleton
+from winnie.util import debug
+from winnie.util import Singleton
 
 import memcache
 
-@singleton
+
 class Client(object):
+    __metaclass__ = Singleton
     """
     A class to handle communication, setting, retrieval
     of variables with memcache.
@@ -22,7 +23,7 @@ class Client(object):
 
     def __init__(self, instance_name, connection=('localhost',)):
         
-        printme("Setting cache instance name to %s" % instance_name)
+        debug("Setting cache instance name to %s" % instance_name)
 
         self.__dict__['name'] = instance_name
         self.__dict__['client'] = memcache.Client(connection)

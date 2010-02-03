@@ -1,4 +1,4 @@
-from time import datetime
+from datetime import datetime
 from types import StringType, FunctionType
 
 urgencies = {
@@ -29,16 +29,19 @@ def debug_print(message, time, urgency):
     " -> [15:21.33] My foo!"
     """
     timeformat = "%H:%M.%S"   
-    out = " %s [%s] %s" % (urgencies[urgency], time.strformat(timeformat), message)
+    #out = " %s [%s] %s" % (urgencies[urgency], time.strftime(timeformat), message)
+    out = " %s [%s] %s" % (urgencies[urgency], time, message)
 
-    log = cache.get_cache()
-    log.append((datetime.now(), out))
+    print out
+    # WTF, was I high?
+    #log = cache.get_cache()
+    #log.append((datetime.now(), out))
 
-    # Don't let log go past LOGSIZE
-    if (len(log) is settings.LOGSIZE):
-        log.pop(0)
-
-    self.c.log = log
+    ## Don't let log go past LOGSIZE
+    #if (len(log) is settings.LOGSIZE):
+    #    log.pop(0)
+    #
+    #self.c.log = log
 
 def singleton(cls):
     instances = {}
@@ -48,3 +51,30 @@ def singleton(cls):
         return instances[cls]
     return getinstance
 
+class Singleton(type):
+    """
+    To use:
+    from winnie.util import Singleton
+    class Foo:
+        __metaclass__ = Singleton
+    """
+    def __init__(cls, name, bases, dic):
+        super(Singleton, cls).__init__(name, bases, dic)
+        cls.instance = None
+
+    def __call__(cls, *args, **kw):
+        if cls.instance is None:
+            cls.instance = super(Singleton, cls).__call__(*args, **kw)
+        return cls.instance
+
+def log(method):
+    """
+    Decorator: will log the method name and what it was called with
+    """
+    def wrapper(*args):
+        debug("%s called with %s"%(method.__name__, args))
+        resp = method(*args)
+        debug("%s returned %s"%(method.__name__, resp))
+        return resp
+
+    return wrapper
