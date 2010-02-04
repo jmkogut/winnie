@@ -1,5 +1,5 @@
 # Typing Speed (in characters per minute)
-TYPING_SPEED = 550
+TYPING_SPEED = 750 # Mine is ~550, 750 is exceedingly high
 
 # Verbosity, the percentage of the time that winnie will 
 # look for something to say in response.
@@ -16,7 +16,11 @@ IRC = (
 
 IRC_CHANNELS = (
     '#'+IRC[0],                     # join the channel with our nickname
-    '#trees'
+    '#bupki'
+)
+
+TRUSTED_USERS = (
+    "db9!db9@64.79.219.85",
 )
 
 # The db connection string

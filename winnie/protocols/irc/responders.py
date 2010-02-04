@@ -29,10 +29,14 @@ class Processor(threading.Thread):
          The main app thread sets this to False when a keyboard interrupt is received
          """
         self.running = True
+        
+        # Continually run, checking for listeners and filling stats then sending output
         while self.running:
-            
-            self.check_output()
             self.fill_stats()
+            self.check_output()
+
+            # Pause for half second
+            time.sleep(0.5)
 
     def check_output(self):
         """
@@ -53,10 +57,6 @@ class Processor(threading.Thread):
                 self.com.privmsg(target, phrase)
 
             self.c.output = output
-
-        # If there is no content in the buffer, wait a sec (literally) and try again
-        else:
-            time.sleep(1)
     
     def fill_stats(self):
         """
@@ -65,15 +65,96 @@ class Processor(threading.Thread):
         listeners = self.c.listeners or 0
         if listeners:
             # TODO: rework how stats are cached
-            self.com.c.stats = [
-                ('pcount', intelligence.select().count()),
-                ('ccount', len(self.c.channels))
-            ]
+            self.com.c.stats = {
+                'factoids': intelligence.select().count(),
+                'channels': [channel for channel in self.com.channels]
+            }
             
             # Every active listener increments this, decrement it for justice!
             self.com.c.listeners -= 1
 
+def CommandHandler(to_wrap, **kwargs):
+    """
+    First up, I apologize to anyone that has to read this.
+
+    Second, this is a Python decorator that can support an optional
+    keyword argument or any amount of them, really.
+
+    The standard method for argument decorators doesn't allow
+    for the decorator to be called /without any arguments/
+
+    This does.
+    """
+
+    if 'require' in kwargs:
+        require_trust = (kwargs['require'] == 'trust')
+    else:
+        require_trust = False
+        
+    def wrapper(*args, **kwargs):
+        method = to_wrap or kwargs['method']
+        self, connection, event = args
+        
+        allowed = not require_trust or event.source() in settings.TRUSTED_USERS
+        
+        # These next two blocks are hideous, refactor
+        params = (
+            event.source().split('!')[0],   # User nick
+            method.__name__,                # method name
+            event.arguments()[0]            # user message
+        )
+
+        if allowed:
+            self.com.log("%s called %s with %s"%(params))
+            try:
+                resp = method(*args)
+            except Exception, e:
+                self.com.log('----------------')
+                print dir(e)
+                traceback.print_exc(e)
+                self.com.log('----------------')
+                resp = "Error: %s" % (e.message or e.__repr__())
+        else:
+            self.com.log("%s was denied access to %s"%(params[:2]))
+            resp = "You are not allowed access"
+
+        if resp and len(resp) > 0:
+            self.com.queuemsg(event, event.target(), self.com.response('to_someone', resp))
+    wrapper.__setattr__('is_handler', True)
+
+    def wrapper_args(method):
+        def wrapped_f(*pargs):
+            return wrapper(pargs[0], pargs[1], pargs[2], method=method)
+        wrapped_f.__setattr__('is_handler', True)
+        return wrapped_f
+
+    if to_wrap:
+        ret = wrapper
+    else:
+        ret = wrapper_args
+    
+    return ret
+
+"""
+To allow usages like
+
+    @handler(require_trust=True)
+    def help_handler(self):
+        pass
+"""
+handler = CommandHandler
+
+
 class Handler(object):
+    """
+    winnie takes every message and sends it to an instance of this class
+
+    The handler class encapsulates all of the response methods, in order
+    to make them easier to dynamically update. It's as simple as
+    
+        reload(responders)
+
+    """
 
     def __init__(self, com):
         self.com = com
@@ -93,26 +174,11 @@ class Handler(object):
             if 'is_handler' in dir(self.__getattribute__(i)) and self.__getattribute__(i).is_handler:
                 self.handlers[i.split('_')[0]] = self.__getattribute__(i)
 
-    def handler(method):
-        """
-        Decorator: will mark a method as an event handler
-        """
-        def handler_wrapper(*args):
-            self, connection, event = args
-            self.com.log("%s called %s with %s"%(event.source().split('!')[0],method.__name__,event.arguments()[0]))
 
-            resp = method(*args)
-            if resp and len(resp) > 0:
-                self.com.queuemsg(event, event.target(), self.com.response('to_someone', resp))
-
-        handler_wrapper.__setattr__('is_handler', True)
-
-        return handler_wrapper
     
-    @handler
+    @handler(None, require='trust')
     def die_handler(self, connection, event):
         self.com.die()
-        return "Die."
 
     @handler
     def channels_handler(self, connection, event):
@@ -166,7 +232,6 @@ class Handler(object):
 
         if command == 'show':
             mode = self.get_mode(event.target())
-            print "*!* "+mode
             debug(mode)
             statement = "I am in %s mode" % mode
             debug(statement)
@@ -193,7 +258,8 @@ class Handler(object):
             print self.c.modes
 
         return "Going into %s mode" % mode
-    @handler
+
+    @handler(None, require='trust')
     def reload_handler(self, connection, event):
         self.com.reload()
         
@@ -202,7 +268,7 @@ class Handler(object):
         return "Reloaded responder engine."
 
 
-    @handler
+    @handler(None, require='trust')
     def update_handler(self, connection, event):
         self.com.update_phrases()
         return "Updated responses."
@@ -214,29 +280,22 @@ class Handler(object):
         if len(message) is 1:
             return "Verbosity is %s." % self.c.verbosity
         else:
-            try:
-                i = int(message[1])
-                if i in range(0,100):
-                    self.c.verbosity = i
-                    return "Set verbosity to %s." % self.c.verbosity
-                else:
-                    return "Verbosity must be between 0 and 100."
-            except ValueError, e:
-                return "The fuck are you trying to do?"
+            i = int(message[1])
+            if i in range(0,100):
+                self.c.verbosity = i
+                return "Set verbosity to %s." % self.c.verbosity
+            else:
+                return "Verbosity must be between 0 and 100."
 
-    @handler
+    @handler(None, require='trust')
     def set_handler(self, connection, event):
         message = event.arguments()[0].split(' ', 2)
 
         if len(message) is not 3:
             return "Usage is %sset [key] [value]." % self.handler_prefix
         else:
-            try:
-                if (self.c.__setattr__(message[1], message[2])):
-                    return "Noted."
-            except Exception, e:
-                traceback.print_exc(e)
-                return "The fuck are you trying to do?"
+            if (self.c.__setattr__(message[1], message[2])):
+                return "Noted."
 
     @handler
     def get_handler(self, connection, event):
@@ -245,15 +304,39 @@ class Handler(object):
         if len(message) is not 2:
             return "Usage is %sget [key]." % self.handler_prefix
         else:
-            try:
-                value = self.c.__getattr__(message[1])
-                if value:
-                    return "%s is %s." % (message[1], value)
-                else:
-                    return "I dunno."
-            except Exception, e:
-                traceback.print_exc(e)
-                return "The fuck are you trying to do?"
+            value = self.c.__getattr__(message[1])
+            if value:
+                return "%s is %s." % (message[1], value)
+            else:
+                return "I dunno."
+
+    @handler
+    def whoami_handler(self, connection, event):
+        message = event.arguments()[0].split(' ')
+
+        if len(message) is not 1:
+            return "Usage is %swhoami" % self.handler_prefix
+        else:
+            return "You are %s"%event.source()
+
+
+    @handler(None, require='trust')
+    def run_handler(self, connection, event):
+        message = event.arguments()[0].split(' ', 1)
+
+        if len(message) is not 2:
+            return "Usage is %srun [code]." % self.handler_prefix
+        else:
+            self.com.log("EVALING CODE: %s"%message[1], 'notice')
+            
+            value = None
+            if '=' in message[1]:
+                exec message[1]
+            else:
+                value = eval(message[1], globals(), locals())
+
+            if not value == None:
+                return "Returned: %s" % value
 
     def roll_speak(self, channel):
         if channel in self.c.modes and self.c.modes[channel] == 'speak' and random.choice(range(0,100)) < self.c.verbosity:

@@ -7,7 +7,7 @@ urgencies = {
     'in':'<-',
     'out':'->',
     'notice':'!!',
-    'sys':'**'
+    'sys':'**',
 }
 
 def debug(item=None, time=datetime.now(), urgency='sub'):
@@ -28,9 +28,12 @@ def debug_print(message, time, urgency):
     debug_print("My foo!", datetime.now(), 'out') # results in
     " -> [15:21.33] My foo!"
     """
-    timeformat = "%H:%M.%S"   
-    #out = " %s [%s] %s" % (urgencies[urgency], time.strftime(timeformat), message)
-    out = " %s [%s] %s" % (urgencies[urgency], time, message)
+    timeformat = "%H:%M %S"   
+
+    if 'strftime' in dir(time):
+        out = " %s [%s] %s" % (urgencies[urgency], time.strftime(timeformat), message)
+    else:
+        out = " %s [%s] %s" % (urgencies[urgency], time, message)
 
     print out
     # WTF, was I high?

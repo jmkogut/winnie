@@ -148,7 +148,7 @@ class Communicator(object, SingleServerIRCBot):
                 thing.arguments()[0]
             ), thing.timestamp, 'in')
         else: #It's just a string
-            debug("[%s] %s" % (thing, datetime.now()), urgency)
+            debug(thing, urgency=urgency)
 
     def message_handler(self, connection, event):
         event.timestamp = datetime.now()

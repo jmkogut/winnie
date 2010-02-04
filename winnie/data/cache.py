@@ -33,11 +33,9 @@ class Client(object):
     def _update_index(self, new=None, delete=False):
         # If delete, remove this key
         if new and delete and new in self.__dict__['index']:
-            print "Removing %s from index" % s
             self.__dict__['index'].remove(new)
         # If not delete and unknown key, add to the index
         elif new and not delete and new not in self.__dict__['index']:
-            print "Adding %s to index" %  new
             self.__dict__['index'].append(new)
         
         self.__dict__['index'].sort()
@@ -51,7 +49,6 @@ class Client(object):
             repr = "%s chars" % len("%s"%value)
         else: repr=value
 
-        print "(Set %s to %s)"%(key,repr)
         self._update_index(new=key,delete=(value==None))
         return self.__dict__['client'].set(self.form(key), value)
     
