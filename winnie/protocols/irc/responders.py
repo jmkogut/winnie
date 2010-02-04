@@ -129,11 +129,9 @@ def CommandHandler(to_wrap, **kwargs):
         return wrapped_f
 
     if to_wrap:
-        ret = wrapper
+        return wrapper
     else:
-        ret = wrapper_args
-    
-    return ret
+        return wrapper_args
 
 """
 To allow usages like
