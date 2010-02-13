@@ -7,6 +7,8 @@ from winnie.data.cache import Client
 from winnie.data.model import *
 from winnie import settings
 
+from irclib import nm_to_n
+
 from types import TupleType
 
 class Communicator(object, SingleServerIRCBot):
@@ -49,11 +51,14 @@ class Communicator(object, SingleServerIRCBot):
             self.__dict__[category+'s'] = l
             self.log("%s: %s" % (category, l))
 
-    def response(self, category, *args):
+    def response(self, category, message):
         """
         Returns a preformatted response
         """
-        return random.choice(self.__dict__[category+'s']) % args
+        if message is None or len(message) is 0:
+            return None
+
+        return random.choice(self.__dict__[category+'s']) % message
 
     def init_responders(self):
         self.processor = responders.Processor(self)    # Sends messages from the outgoing queue
@@ -64,7 +69,6 @@ class Communicator(object, SingleServerIRCBot):
         Reloads responder module
         """
         reload(responders)
-        from responders import Handler, Processor
         self.init_responders()
 
 
@@ -87,7 +91,11 @@ class Communicator(object, SingleServerIRCBot):
         This wrapper adds a typing delay, improves grammar, performs replies,
         then sends the message out.
         """
-        phrase = phrase.replace("$who", event.source().split('!')[0])
+
+        if phrase is None or len(phrase) is 0:
+            return
+
+        phrase = phrase.replace("$who", nm_to_n(event.source()))
         phrase = phrase.replace(self.nick+' ', 'I ').replace('I is', 'I am')
         phrase = phrase.lstrip('10')
 
@@ -104,7 +112,7 @@ class Communicator(object, SingleServerIRCBot):
             return
         
         if (target == self.nick):
-            target = event.source().split('!')[0]
+            target = nm_to_n(event.source())
 
         output = self.c.output
         output.insert(0, (target, phrase))
@@ -144,7 +152,7 @@ class Communicator(object, SingleServerIRCBot):
         elif 'timestamp' in dir(thing):
             debug("[%s] %s> %s" % (
                 thing.target(),
-                thing.source().split('!')[0],
+               nm_to_n(thing.source()),
                 thing.arguments()[0]
             ), thing.timestamp, 'in')
         else: #It's just a string
@@ -154,7 +162,7 @@ class Communicator(object, SingleServerIRCBot):
         event.timestamp = datetime.now()
         self.log(event)
         self.handler.handle(connection, event)
-    
+
     def update_channels(self):
         chans = [chan for chan in self.channels]
         print "Chanlist: %s"%chans

@@ -56,7 +56,7 @@ def lastused(result):
 
 class account(SQLObject):
     """
-    Represents a user's presense in the system
+    Represents a user's presence in the system
     """
     class sqlmeta:
         fromDatabase = True
@@ -66,6 +66,16 @@ class account_mask(SQLObject):
     Any nickmasks seen.
     """
     account = ForeignKey('account')
+
+    def _get_trusted(self):
+        if self.account != None:
+            return self.account.trusted
+        else:
+            return False
+
+    def _set_trusted(self, value):
+        pass
+
     class sqlmeta:
         fromDatabase = True
 

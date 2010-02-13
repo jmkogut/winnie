@@ -2,11 +2,14 @@ from winnie import settings
 from winnie.data.model import *
 from winnie.util import log, debug
 
+import md5
 import time
 import random
 import threading
 import traceback
 from types import *
+
+from irclib import nm_to_n
 
 class Processor(threading.Thread):
     """
@@ -94,12 +97,12 @@ def CommandHandler(to_wrap, **kwargs):
     def wrapper(*args, **kwargs):
         method = to_wrap or kwargs['method']
         self, connection, event = args
-        
-        allowed = not require_trust or event.source() in settings.TRUSTED_USERS
+
+        allowed = not require_trust or event.user.trusted
         
         # These next two blocks are hideous, refactor
         params = (
-            event.source().split('!')[0],   # User nick
+            nm_to_n(event.source()),        # User nick
             method.__name__,                # method name
             event.arguments()[0]            # user message
         )
@@ -109,26 +112,30 @@ def CommandHandler(to_wrap, **kwargs):
             try:
                 resp = method(*args)
             except Exception, e:
-                self.com.log('----------------')
+                self.com.log('== Exception------')
                 print dir(e)
                 traceback.print_exc(e)
-                self.com.log('----------------')
+                self.com.log('== ---------------')
                 resp = "Error: %s" % (e.message or e.__repr__())
         else:
             self.com.log("%s was denied access to %s"%(params[:2]))
             resp = "You are not allowed access"
 
-        if resp and len(resp) > 0:
-            self.com.queuemsg(event, event.target(), self.com.response('to_someone', resp))
+        if resp is not None:
+            self.com.queuemsg(event, event.target(), self.com.response('to_someone', resp.strip()))
+
     wrapper.__setattr__('is_handler', True)
 
     def wrapper_args(method):
         def wrapped_f(*pargs):
             return wrapper(pargs[0], pargs[1], pargs[2], method=method)
         wrapped_f.__setattr__('is_handler', True)
+        wrapped_f.__setattr__('__doc__', method.__doc__)
         return wrapped_f
 
     if to_wrap:
+        print to_wrap.__doc__
+        wrapper.__setattr__('__doc__', to_wrap.__doc__)
         return wrapper
     else:
         return wrapper_args
@@ -152,6 +159,7 @@ class Handler(object):
     
         reload(responders)
 
+    TODO: fix return capitalization on handlers
     """
 
     def __init__(self, com):
@@ -176,10 +184,16 @@ class Handler(object):
     
     @handler(None, require='trust')
     def die_handler(self, connection, event):
+        """
+        Turns winnie off.
+        """
         self.com.die()
 
     @handler
     def channels_handler(self, connection, event):
+        """
+        Interact with the channel list, options are ['list', 'join', 'part']
+        """
         message = event.arguments()[0].split(' ')
 
         if len(message) > 1:
@@ -207,6 +221,9 @@ class Handler(object):
 
     @handler
     def help_handler(self, connection, event):
+        """
+        Displays the help text
+        """
         message = event.arguments()[0].split(' ')
 
         if len(message) > 1:
@@ -218,9 +235,14 @@ class Handler(object):
             return "Command list is %s" % (", ".join(
                 ["%s%s" % (self.handler_prefix, c) for c in self.handlers]
             ))
+        elif command in [c for c in self.handlers]:
+            return "%s: %s" % (command, self.handlers[command].__doc__)
     
     @handler
     def mode_handler(self, connection, event):
+        """
+        Allows you to view or set the mode for this channel. Options are ['shush', 'speak']
+        """
         message = event.arguments()[0].split(' ')
 
         if len(message) > 1:
@@ -238,16 +260,21 @@ class Handler(object):
             self.set_mode(event.target(), command)
             return "Set mode to %s" % command
 
-    @log
     def get_mode(self, channel):
+        """
+        Retrieves the mode for this channel. Choices are ['shush', 'speak']
+        """
         modes = self.c.modes
         if type(modes) != DictType or channel not in modes:
             self.set_mode(channel, 'shush')
             modes = self.c.modes
         
         return modes[channel]
-    @log
+   
     def set_mode(self, channel, mode):
+        """
+        Sets the mode for this channel. Choices are ['shush', 'speak']
+        """
         if mode in ('shush', 'speak'):
             modes = self.c.modes
             if type(modes) is not DictType: modes = {}
@@ -259,6 +286,9 @@ class Handler(object):
 
     @handler(None, require='trust')
     def reload_handler(self, connection, event):
+        """
+        Reloads responder engine.
+        """
         self.com.reload()
         
         # TODO: reload model
@@ -315,12 +345,15 @@ class Handler(object):
         if len(message) is not 1:
             return "Usage is %swhoami" % self.handler_prefix
         else:
-            return "You are %s"%event.source()
+            resp = "You are %s (trusted: %s)" % (event.user.mask, ('yes' if event.user.trusted else 'no'))
 
+            if event.user.account:
+                resp = resp + " Registered as %s" % (event.user.account.email)
+            return resp
 
     @handler(None, require='trust')
     def run_handler(self, connection, event):
-        message = event.arguments()[0].split(' ', 1)
+        message = event.arguments()[0].split(' ')
 
         if len(message) is not 2:
             return "Usage is %srun [code]." % self.handler_prefix
@@ -336,12 +369,141 @@ class Handler(object):
             if not value == None:
                 return "Returned: %s" % value
 
+    @handler(None, require='trust')
+    def trust_handler(self, connection, event):
+        message = event.arguments()[0].split(' ')
+
+        if len(message) is not 2:
+            return "Usage is %strust [mask]." % self.handler_prefix
+        else:
+            to_trust = message[1]
+            
+            if to_trust in [u for u in self.com.channels[event.target()].userdict]:
+                return "You must specify %s's full nick mask." % to_trust
+
+            user = self.get_user(to_trust)
+            
+            if not user.account:
+                return "%s doesn't have an account registered" % nm_to_n(to_trust)
+
+            user.account.trusted = 1
+
+            return "%s is now trusted" % nm_to_n(to_trust)
+    
+    @handler
+    def register_handler(self, connection, event):
+        message = event.arguments()[0].split(' ') # register [email] [password]
+
+        if len(message) is not 3:
+            return "Usage is %sregister [email] [password]" % self.handler_prefix
+        else:
+            email, password = message[1:]
+            
+            query = account.selectBy(email=email)
+            if query.count() == 0:
+                a = account(email=email, password=md5.md5(password).hexdigest())
+                event.user.account = a
+                return "account created, identified as %s" % email
+            else:
+                return "an account already exists for that email"
+
+            user.trusted = 1
+
+            return "%s is now trusted" % nm_to_n(to_trust)
+
+    @handler
+    def identify_handler(self, connection, event):
+        message = event.arguments()[0].split(' ') # register [email] [password]
+
+        if len(message) is not 3:
+            return "Usage is %sidentify [email] [password]" % self.handler_prefix
+        else:
+            email, password = message[1:]
+
+            query = account.selectBy(email=email)
+            if query.count() == 0:
+                return "No user registered as %s" % email
+            else:
+                a = query.getOne()
+
+                if md5.md5(password).hexdigest() == a.password:
+                    event.user.account = a
+                    
+                    return "identified as %s" % event.user.account.email
+                else:
+                    return "wrong password"
+    
+    @handler
+    def markov_handler(self, connection, event):
+        """
+        Builds a markov chain from the query term
+        """
+        _, query = event.arguments()[0].split(' ', 1) # markov [query]
+        if len(query.split()) > 2:
+            return "Limited to two query words"
+        else:
+            searchphrase = query.replace('\\', '\\\\').replace("'", "\\'")
+            results = sqlhub.processConnection.queryAll(
+                intelligence.searchQuery % (searchphrase)
+            )
+            
+            # triples
+            table = {}
+
+            lw = "\n"
+            w1, w2 = lw, lw
+
+            for result in results:
+                n, p, i = result[2:5]
+                phrase = "%s %s %s"%(n,i,p)
+                for word in phrase.split():
+                    table.setdefault( (w1, w2), [] ).append(word)
+                    w1, w2 = w2, word
+
+            table.setdefault( (w1, w2), [] ).append(lw)
+            
+            # Chain generation
+            w1, w2 = lw, lw
+            chain = ""
+            for i in xrange(100):
+                newword = random.choice(table[w1,w2])
+                if newword is lw: print "|%s WRAP"%chain
+                chain += " " + newword
+                w1, w2 = w2, newword
+            
+            print chain
+            return chain.split('. ')[0]+'.'
+
+    @handler(None, require='trust')
+    def trace_handler(self, connection, event):
+        """
+        Opens a trace in the console. Do not use.
+        """
+        message = event.arguments()[0].split(' ')
+
+        if len(message) is not 1:
+            return "Usage is %strace" % self.handler_prefix
+        else:
+            from ipdb import set_trace; set_trace()
+
+            return "done with trace"
+
     def roll_speak(self, channel):
         if channel in self.c.modes and self.c.modes[channel] == 'speak' and random.choice(range(0,100)) < self.c.verbosity:
             return True
         return False
 
+    def get_user(self, mask):
+        query = account_mask.selectBy(mask=mask)
+
+        if query.count() > 0:
+            return query.getOne()
+        else:
+            return account_mask(mask=mask, accountID=None)
+
     def handle(self, connection, event):
+        event.user = self.get_user(event.source())
+
         try:
             for handler in self.handlers.keys():
                 if event.arguments()[0].startswith("%s%s" % (self.handler_prefix,handler)):
@@ -358,6 +520,11 @@ class Handler(object):
 
 
     def map_reply(self, connection, event):
+        """
+        Given the connection object and an "event" (an IRC event) this method
+        will formulate a reply.
+        """
+
         message = event.arguments()[0]
         
         # Basically returns if a statement like 'x is/are/was/has a cat'
@@ -376,7 +543,7 @@ class Handler(object):
             else:
                 # Has this exact statement been said before?
                 if is_indicated[1][1] == query[0].value:
-                    statement = self.com.response('rebuttal', event.source().split('!')[0])
+                    statement = self.com.response('rebuttal', nm_to_n(event.source()))   
                 # If he's conflicting what we already know
                 else:
                     # TELL HIM OFF & learn
