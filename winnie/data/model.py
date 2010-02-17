@@ -24,6 +24,18 @@ class intelligence(SQLObject):
     def _set_score(self, value):
         self._score = value
 
+    def _get_original(self):
+        return "%s %s %s" % (self.keyphrase, self.indicator, self.value)
+
+    def _set_original(self, value):
+        pass
+
+    def as_dict(self):
+        dict = {}
+        for item in self._reprItems():
+            dict[item[0]] = item[1]
+        return dict
+
 def search_intelligence(searchphrase):
     """
     Called the stored procedure to search for a phrase against the db
@@ -60,6 +72,12 @@ class account(SQLObject):
     """
     class sqlmeta:
         fromDatabase = True
+
+    def as_dict(self):
+        dict = {}
+        for item in self._reprItems():
+            dict[item[0]] = item[1]
+        return dict
 
 class account_mask(SQLObject):
     """

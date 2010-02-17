@@ -76,7 +76,7 @@ class Processor(threading.Thread):
             # Every active listener increments this, decrement it for justice!
             self.com.c.listeners -= 1
 
-def CommandHandler(to_wrap, **kwargs):
+def CommandHandler(*args, **kwargs):
     """
     First up, I apologize to anyone that has to read this.
 
@@ -93,7 +93,8 @@ def CommandHandler(to_wrap, **kwargs):
         require_trust = (kwargs['require'] == 'trust')
     else:
         require_trust = False
-        
+    
+    to_wrap = args[0] if len(args) > 0 else None
     def wrapper(*args, **kwargs):
         method = to_wrap or kwargs['method']
         self, connection, event = args
@@ -182,7 +183,7 @@ class Handler(object):
 
 
     
-    @handler(None, require='trust')
+    @handler(require='trust')
     def die_handler(self, connection, event):
         """
         Turns winnie off.
@@ -284,7 +285,7 @@ class Handler(object):
 
         return "Going into %s mode" % mode
 
-    @handler(None, require='trust')
+    @handler(require='trust')
     def reload_handler(self, connection, event):
         """
         Reloads responder engine.
@@ -296,7 +297,7 @@ class Handler(object):
         return "Reloaded responder engine."
 
 
-    @handler(None, require='trust')
+    @handler(require='trust')
     def update_handler(self, connection, event):
         self.com.update_phrases()
         return "Updated responses."
@@ -315,7 +316,7 @@ class Handler(object):
             else:
                 return "Verbosity must be between 0 and 100."
 
-    @handler(None, require='trust')
+    @handler(require='trust')
     def set_handler(self, connection, event):
         message = event.arguments()[0].split(' ', 2)
 
@@ -351,11 +352,11 @@ class Handler(object):
                 resp = resp + " Registered as %s" % (event.user.account.email)
             return resp
 
-    @handler(None, require='trust')
+    @handler(require='trust')
     def run_handler(self, connection, event):
-        message = event.arguments()[0].split(' ')
+        message = event.arguments()[0].split(' ', 1)
 
-        if len(message) is not 2:
+        if len(message) <= 1:
             return "Usage is %srun [code]." % self.handler_prefix
         else:
             self.com.log("EVALING CODE: %s"%message[1], 'notice')
@@ -369,7 +370,7 @@ class Handler(object):
             if not value == None:
                 return "Returned: %s" % value
 
-    @handler(None, require='trust')
+    @handler(require='trust')
     def trust_handler(self, connection, event):
         message = event.arguments()[0].split(' ')
 
@@ -443,16 +444,17 @@ class Handler(object):
             return "Limited to two query words"
         else:
             searchphrase = query.replace('\\', '\\\\').replace("'", "\\'")
-            results = sqlhub.processConnection.queryAll(
+            results = list(sqlhub.processConnection.queryAll(
                 intelligence.searchQuery % (searchphrase)
-            )
+            ))
             
             # triples
             table = {}
 
             lw = "\n"
             w1, w2 = lw, lw
-
+            
+            random.shuffle(results) # RANDOM
             for result in results:
                 n, p, i = result[2:5]
                 phrase = "%s %s %s"%(n,i,p)
@@ -466,15 +468,21 @@ class Handler(object):
             w1, w2 = lw, lw
             chain = ""
             for i in xrange(100):
-                newword = random.choice(table[w1,w2])
-                if newword is lw: print "|%s WRAP"%chain
+                try:
+                    print "%s %s: %s" % (w1,w2, table[(w1,w2)])
+                    newword = random.choice(table[(w1,w2)])
+                except KeyError, e:
+                    newword = lw
+
+                #if newword is lw: print ":|| %s ||:"%chain
+
                 chain += " " + newword
                 w1, w2 = w2, newword
             
-            print chain
-            return chain.split('. ')[0]+'.'
+            #print chain
+            return chain.split('. ')[0]
 
-    @handler(None, require='trust')
+    @handler(require='trust')
     def trace_handler(self, connection, event):
         """
         Opens a trace in the console. Do not use.
@@ -548,9 +556,9 @@ class Handler(object):
                 else:
                     # TELL HIM OFF & learn
                     statement= self.com.response('preconception',
-                        query[0].keyphrase,
+                        (query[0].keyphrase,
                         query[0].indicator,
-                        query[0].value
+                        query[0].value)
                     )
                     f = self.new_intelligence(event, is_indicated)                       
                     
@@ -567,9 +575,9 @@ class Handler(object):
                     event,
                     event.target(),
                     self.com.response('statement',
-                        result.keyphrase,
+                        (result.keyphrase,
                         result.indicator,
-                        result.value
+                        result.value)
                     )
                 )
            

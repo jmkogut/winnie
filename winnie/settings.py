@@ -16,7 +16,8 @@ IRC = (
 
 IRC_CHANNELS = (
     '#'+IRC[0],                     # join the channel with our nickname
-    '#bupki'
+    '#bupki',
+    '#trees'
 )
 
 TRUSTED_USERS = (
