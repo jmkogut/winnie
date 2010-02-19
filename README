@@ -1,0 +1,9 @@
+winnie
+======
+
+
+winnie is an IRC bot. She sits and waits for people to make statements, "this car is fast," "you are a fatass," "I have a rash."
+
+She will then spit out these statements in conversation later whenever appropriate.
+
+There is a markov functionality as well for increased amusement.
