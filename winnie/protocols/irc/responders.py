@@ -7,9 +7,10 @@ import time
 import random
 import threading
 import traceback
-from types import *
 
+from types import *
 from irclib import nm_to_n
+from datetime import datetime
 
 class Processor(threading.Thread):
     """
@@ -33,7 +34,8 @@ class Processor(threading.Thread):
          """
         self.running = True
         
-        # Continually run, checking for listeners and filling stats then sending output
+        # Continually run, checking for listeners and filling stats then
+        #sending output
         while self.running:
             self.fill_stats()
             self.check_output()
@@ -141,13 +143,12 @@ def CommandHandler(*args, **kwargs):
     else:
         return wrapper_args
 
-"""
-To allow usages like
 
-    @handler(require_trust=True)
-    def help_handler(self):
-        pass
-"""
+#To allow usages like
+#
+#    @handler(require_trust=True)
+#    def help_handler(self):
+#        pass
 handler = CommandHandler
 
 
@@ -171,6 +172,8 @@ class Handler(object):
         self.handler_prefix = settings.HANDLER_PREFIX
         self.handlers = {}
         self.find_handlers()
+
+        self.markov_table = {}
     
     def find_handlers(self):
         """
@@ -242,9 +245,10 @@ class Handler(object):
     @handler
     def mode_handler(self, connection, event):
         """
-        Allows you to view or set the mode for this channel. Options are ['shush', 'speak']
+        Allows you to view or set the mode for this channel. Options are ['shush', 'mimic', 'markov']
         """
         message = event.arguments()[0].split(' ')
+        choices = ('shush', 'mimic', 'markov')
 
         if len(message) > 1:
             command = message[1]
@@ -257,13 +261,13 @@ class Handler(object):
             statement = "I am in %s mode" % mode
             debug(statement)
             return statement
-        elif command in ('shush', 'speak'):
+        elif command in choices:
             self.set_mode(event.target(), command)
             return "Set mode to %s" % command
 
     def get_mode(self, channel):
         """
-        Retrieves the mode for this channel. Choices are ['shush', 'speak']
+        Retrieves the mode for this channel.
         """
         modes = self.c.modes
         if type(modes) != DictType or channel not in modes:
@@ -274,14 +278,12 @@ class Handler(object):
    
     def set_mode(self, channel, mode):
         """
-        Sets the mode for this channel. Choices are ['shush', 'speak']
+        Sets the mode for this channel.
         """
-        if mode in ('shush', 'speak'):
-            modes = self.c.modes
-            if type(modes) is not DictType: modes = {}
-            modes[channel] = mode
-            self.c.modes = modes
-            print self.c.modes
+        modes = self.c.modes
+        if type(modes) is not DictType: modes = {}
+        modes[channel] = mode
+        self.c.modes = modes
 
         return "Going into %s mode" % mode
 
@@ -382,7 +384,7 @@ class Handler(object):
             if to_trust in [u for u in self.com.channels[event.target()].userdict]:
                 return "You must specify %s's full nick mask." % to_trust
 
-            user = self.get_user(to_trust)
+            user = self.get_usermask(to_trust)
             
             if not user.account:
                 return "%s doesn't have an account registered" % nm_to_n(to_trust)
@@ -436,51 +438,8 @@ class Handler(object):
     
     @handler
     def markov_handler(self, connection, event):
-        """
-        Builds a markov chain from the query term
-        """
         _, query = event.arguments()[0].split(' ', 1) # markov [query]
-        if len(query.split()) > 2:
-            return "Limited to two query words"
-        else:
-            searchphrase = query.replace('\\', '\\\\').replace("'", "\\'")
-            results = list(sqlhub.processConnection.queryAll(
-                intelligence.searchQuery % (searchphrase)
-            ))
-            
-            # triples
-            table = {}
-
-            lw = "\n"
-            w1, w2 = lw, lw
-            
-            random.shuffle(results) # RANDOM
-            for result in results:
-                n, p, i = result[2:5]
-                phrase = "%s %s %s"%(n,i,p)
-                for word in phrase.split():
-                    table.setdefault( (w1, w2), [] ).append(word)
-                    w1, w2 = w2, word
-
-            table.setdefault( (w1, w2), [] ).append(lw)
-            
-            # Chain generation
-            w1, w2 = lw, lw
-            chain = ""
-            for i in xrange(100):
-                try:
-                    print "%s %s: %s" % (w1,w2, table[(w1,w2)])
-                    newword = random.choice(table[(w1,w2)])
-                except KeyError, e:
-                    newword = lw
-
-                #if newword is lw: print ":|| %s ||:"%chain
-
-                chain += " " + newword
-                w1, w2 = w2, newword
-            
-            #print chain
-            return chain.split('. ')[0]
+        return self.build_markov_chain(query)
 
     @handler(require='trust')
     def trace_handler(self, connection, event):
@@ -497,11 +456,23 @@ class Handler(object):
             return "done with trace"
 
     def roll_speak(self, channel):
-        if channel in self.c.modes and self.c.modes[channel] == 'speak' and random.choice(range(0,100)) < self.c.verbosity:
+        """
+        For any event in which winnie /might/ speak, she
+        calls this method.
+
+        It rolls the dice and determines whether or not she
+        should based on channel mode + randomness + verbosity.
+        """
+        if channel in self.c.modes and self.c.modes[channel] != 'shush' \
+            and random.choice(range(0,100)) < self.c.verbosity:
+
             return True
         return False
 
-    def get_user(self, mask):
+    def get_usermask(self, mask):
+        """
+        returns the account_mask db record for the user
+        """
         query = account_mask.selectBy(mask=mask)
 
         if query.count() > 0:
@@ -510,7 +481,15 @@ class Handler(object):
             return account_mask(mask=mask, accountID=None)
 
     def handle(self, connection, event):
-        event.user = self.get_user(event.source())
+        """
+        The first level of handling. This checks to see if
+        a command was called.
+
+        Otherwise the event gets sent off to the mapper, which
+        scans text for things to learn or replies to formulate
+        based on channel mode.
+        """
+        event.user = self.get_usermask(event.source())
 
         try:
             for handler in self.handlers.keys():
@@ -520,19 +499,20 @@ class Handler(object):
             
             self.map_reply(connection, event)
 
+        # In the event of an unhandled exception, we print the traceback
+        # and restart our responders.
         except Exception, e:
             traceback.print_exc(e)
             self.com.init_responders()
         finally:
             pass
 
-
     def map_reply(self, connection, event):
         """
-        Given the connection object and an "event" (an IRC event) this method
-        will formulate a reply.
+        Searches text for learnable content, also formulates replies to content
+        either mimicing former statements or generating entirely new ones
+        using markov chains.
         """
-
         message = event.arguments()[0]
         
         # Basically returns if a statement like 'x is/are/was/has a cat'
@@ -567,29 +547,86 @@ class Handler(object):
 
         # Nothing indicated, let's do a search mang
         elif self.roll_speak(event.target()):
-            result = search_intelligence(message)
+            result = self.generate_response(message, self.c.modes[event.target()])
       
             if result:
                  # If something matches that phrase:
                 self.com.queuemsg(
                     event,
                     event.target(),
-                    self.com.response('statement',
-                        (result.keyphrase,
-                        result.indicator,
-                        result.value)
-                    )
+                    result #self.com.response('statement', result)
                 )
-           
-            
-                result.lastused = datetime.now()
+    
+    def search(self, query, limit=1, not_within=60): # not_within unit is minutes
+        """
+        Does a natural language search on the database for [query], 
+        results limited to [limit], and always older than the last
+        argument.
+        """
+        return search_intelligence(query, limit, not_within)
 
-    """
-    Looks through the phrase for the existance of any thing like
-        'john is a fag'
-    and will return ('is', ['john', 'a fag'])
-    """
+    def generate_response(self, message, mode):
+        """
+        Generates a response for a given message and mode
+        """
+        if mode == 'mimic':
+            intel = self.search(message, limit=1)
+            if intel:
+                intel.lastused = datetime.now()
+                return intel.original
+
+        elif mode == 'markov':
+            return self.build_markov_chain(message, self.markov_table)
+    
+    def build_markov_chain(self, query, table=None):
+        """
+        Builds a markov chain from the search query
+
+        TODO: build out a Markov class, it'll use winnie.data.Client
+        """
+        if False: #len(query.split()) > 2: # TODO: factor out, didn't want to limit
+            return "Limited to two query words"
+        else:
+            print "[%s]"%query
+            intel = self.search(query.split(" "), limit=0, not_within=0)
+            if not intel: return
+
+            results = [i.original for i in intel]
+
+            lw = "\n"
+            w1, w2 = lw, lw
+            
+            if type(table) != DictType: table = {}
+
+            # For each statement, we're going to build up a table of word sequences
+            # and the words that follow.
+            for word in " ".join(results).split(" "):
+                table.setdefault( (w1, w2), [] ).append(word)
+                w1, w2 = w2, word
+           
+            table.setdefault( (w1, w2), [] ).append(lw)
+            
+            # Chain generation
+            w1, w2 = lw, lw
+            chain = ""
+            for i in xrange(100): # TODO: make this configurable, do something
+                try:
+                    newword = random.choice(table[(w1,w2)])
+                except KeyError, e:
+                    newword = lw
+
+                chain += " " + newword
+                w1, w2 = w2, newword
+
+            # TODO: regulate returns, allow option to return more than first sentence
+            return chain.split('. ')[0]
+
     def indicated(self, message):
+        """
+        Looks through the phrase for the existance of any thing like
+            'john is a fag'
+        and will return ('is', ['john', 'a fag'])
+        """
         # Don't log questions now
         if message.endswith('?') and not message.endswith('\\?'):
             return None
@@ -609,10 +646,10 @@ class Handler(object):
 
         return None
 
-    """
-    Creates a new intelligence
-    """
     def new_intelligence(self, event, is_indicated, save=True):
+        """
+        Saves intel to the db from an event
+        """
         if save:
             i = intelligence(
                 mask = event.source(),
