@@ -1,15 +1,23 @@
+"""
+Communication class
+"""
+
+import random
+
 from ircbot import SingleServerIRCBot
 
-import responders
+from winnie.protocols.irc import responders
 
 from winnie.util import debug
 from winnie.data.cache import Client
-from winnie.data.model import *
+from winnie.data.model import phrase_category, phrase_list
 from winnie import settings
 
 from irclib import nm_to_n
 
 from types import TupleType
+
+from datetime import datetime
 
 class Communicator(object, SingleServerIRCBot):
     """
@@ -29,8 +37,6 @@ class Communicator(object, SingleServerIRCBot):
 
         self.update_phrases()
 
-        self.init_responders()
-
         # Channel related things
         self.c.log = []
         self.c.channels = []
@@ -41,15 +47,19 @@ class Communicator(object, SingleServerIRCBot):
 
         self.c.verbosity = settings.VERBOSITY
 
+        self.processor = None
+        self.handler = None
+        self.init_responders()
+
     def update_phrases(self):
         """
         Caches phrases that we're going to need so no future
         DB lookups are needed for them
         """
-        for category in [phrase.category for phrase in phrase_category.select()]:
-            l = phrase_list(category)
-            self.__dict__[category+'s'] = l
-            self.log("%s: %s" % (category, l))
+        for cat in [phrase.category for phrase in phrase_category.select()]:
+            l = phrase_list(cat)
+            self.__dict__[cat+'s'] = l
+            self.log("%s: %s" % (cat, l))
 
     def response(self, category, message):
         """
@@ -58,21 +68,28 @@ class Communicator(object, SingleServerIRCBot):
         if message is None or len(message) is 0:
             return None
 
-        return random.choice(self.__dict__[category+'s']) % message
+        response = random.choice(self.__dict__[category+'s'])
+        return response % message
 
     def init_responders(self):
-        self.processor = responders.Processor(self)    # Sends messages from the outgoing queue
-        self.handler = responders.Handler(self)        # Response engine for phrases
+        """
+        Spawns the responders
+        """
+        # Sends messages from the outgoing queue
+        self.processor = responders.Processor(self)
+
+        # Generates responses, learns intel
+        self.handler = responders.Handler(self)
 
     def reload(self):
         """
-        Reloads responder module
+        Reloads and restarts responders
         """
         reload(responders)
         self.init_responders()
 
 
-    def on_welcome(self, connection, event):
+    def on_welcome(self, _connection, _event):
         """
         Initial server welcome message, join all channels
         """
@@ -84,7 +101,7 @@ class Communicator(object, SingleServerIRCBot):
 
         self.processor.start()
     
-    def queuemsg(self, event, target, phrase, pause=True):
+    def queuemsg(self, event, target, phrase):
         """
         A local wrapper to connection.privmsg
 
@@ -98,14 +115,16 @@ class Communicator(object, SingleServerIRCBot):
         phrase = phrase.replace("$who", nm_to_n(event.source()))
         phrase = phrase.replace(self.nick+' ', 'I ').replace('I is', 'I am')
         phrase = phrase.lstrip('10')
-
-        replyIndex = phrase.lower().find('<reply>')
-        if replyIndex > -1:
+        
+        # If any statement contains <reply> we only say what comes
+        # after it.
+        index = phrase.lower().find('<reply>')
+        if index > -1:
             self.queuemsg(
                 event,
                 target,
                 "%s" % (
-                    phrase[replyIndex+7:].strip()
+                    phrase[index+7:].strip()
                 )
             )
 
@@ -121,16 +140,28 @@ class Communicator(object, SingleServerIRCBot):
         self.log("Added output")
 
     def privmsg(self, target, phrase):
+        """
+        Sends a private message to the target
+        """
         self.log((target, phrase))
         self.connection.privmsg(target, phrase)
 
     def on_pubmsg(self, connection, event):
+        """
+        On every pubmsg received
+        """
         self.message_handler(connection, event)
 
     def on_privmsg(self, connection, event):
+        """
+        On every private message received
+        """
         self.message_handler(connection, event)
 
     def log(self, thing, urgency='sys'):
+        """
+        Pretty format log messages
+        """
         t = type(thing)
 
         # An intelligence learned
@@ -159,21 +190,32 @@ class Communicator(object, SingleServerIRCBot):
             debug(thing, urgency=urgency)
 
     def message_handler(self, connection, event):
+        """
+        Send events off to the responders
+        """
         event.timestamp = datetime.now()
         self.log(event)
         self.handler.handle(connection, event)
 
     def update_channels(self):
+        """
+        Update memcached with the chanlist
+        """
         chans = [chan for chan in self.channels]
-        print "Chanlist: %s"%chans
         self.c.channels = chans
 
     def join(self, channel):
+        """
+        Join in on a channel
+        """
         if channel not in [chan for chan in self.channels]:
             self.log("Joining %s" % channel)
             self.connection.join(channel)
 
     def part(self, channel):
+        """
+        Storm out of a channel
+        """
         self.update_channels()
         if channel in [c for c in self.channels]:
             self.log("Parting %s" % channel)

@@ -9,14 +9,14 @@ if __name__ == '__main__':
     from winnie.protocols.irc import communicator
 
     try:
-        w = communicator.Communicator()
-        w.start()
-        w.running = False
-        w.die()
+        win = communicator.Communicator()
+        win.start()
+        win.running = False
+        win.die()
 
     except KeyboardInterrupt, e:
-        w.running = False
-        w.die()
+        win.running = False
+        win.die()
     
 else:
     print 'Usage: python ./main.py'

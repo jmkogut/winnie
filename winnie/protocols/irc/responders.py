@@ -1,5 +1,9 @@
+"""
+Contains the processes in charge of responding to input
+"""
+
 from winnie import settings
-from winnie.data.model import *
+from winnie.data.model import intelligence
 from winnie.util import log, debug
 
 import md5
@@ -8,7 +12,7 @@ import random
 import threading
 import traceback
 
-from types import *
+from types import DictType
 from irclib import nm_to_n
 from datetime import datetime
 
@@ -25,6 +29,8 @@ class Processor(threading.Thread):
     def __init__(self, communicator):
         self.com = communicator
         self.c = self.com.c
+        self.running = True
+        self@running = True
 
         threading.Thread.__init__(self)
 
@@ -32,8 +38,7 @@ class Processor(threading.Thread):
         """
          The main app thread sets this to False when a keyboard interrupt is received
          """
-        self.running = True
-        
+       
         # Continually run, checking for listeners and filling stats then
         #sending output
         while self.running:
@@ -53,9 +58,10 @@ class Processor(threading.Thread):
         if len(output) > 0:
             # Do this as long as it has content
             while len(output) > 0:
-                # Unpack this message, calculate delay, pause for appropriate time
+                # Unpack this message, calculate delay, pause for appropriate
+                # time
                 (target, phrase) = output.pop()                
-                delay = (len(tuple(phrase))*1.0 / settings.TYPING_SPEED*1.0) * 60
+                delay = (len(tuple(phrase))*1.0 / settings.TYPING_SPEED*1.0)*60
                 time.sleep( delay )
                 
                 # Send off the message
@@ -78,7 +84,7 @@ class Processor(threading.Thread):
             # Every active listener increments this, decrement it for justice!
             self.com.c.listeners -= 1
 
-def CommandHandler(*args, **kwargs):
+def handler(*args, **kwargs):
     """
     First up, I apologize to anyone that has to read this.
 
@@ -98,8 +104,9 @@ def CommandHandler(*args, **kwargs):
     
     to_wrap = args[0] if len(args) > 0 else None
     def wrapper(*args, **kwargs):
+        """wrapper"""
         method = to_wrap or kwargs['method']
-        self, connection, event = args
+        self, _connection, event = args
 
         allowed = not require_trust or event.user.trusted
         
@@ -114,23 +121,31 @@ def CommandHandler(*args, **kwargs):
             self.com.log("%s called %s with %s"%(params))
             try:
                 resp = method(*args)
-            except Exception, e:
-                self.com.log('== Exception------')
-                print dir(e)
-                traceback.print_exc(e)
-                self.com.log('== ---------------')
-                resp = "Error: %s" % (e.message or e.__repr__())
+            #except Exception, e:
+            #    self.com.log('== Exception------')
+            #    print dir(e)
+            #    traceback.print_exc(e)
+            #    self.com.log('== ---------------')
+            #    resp = "Error: %s" % (e.message or e.__repr__())
+            finally:
+                pass
         else:
             self.com.log("%s was denied access to %s"%(params[:2]))
             resp = "You are not allowed access"
 
         if resp is not None:
-            self.com.queuemsg(event, event.target(), self.com.response('to_someone', resp.strip()))
+            self.com.queuemsg(
+                event,
+                event.target(),
+                self.com.response('to_someone', resp.strip())
+            )
 
     wrapper.__setattr__('is_handler', True)
 
     def wrapper_args(method):
+        """wrapper"""
         def wrapped_f(*pargs):
+            """wrapper"""
             return wrapper(pargs[0], pargs[1], pargs[2], method=method)
         wrapped_f.__setattr__('is_handler', True)
         wrapped_f.__setattr__('__doc__', method.__doc__)
@@ -142,15 +157,6 @@ def CommandHandler(*args, **kwargs):
         return wrapper
     else:
         return wrapper_args
-
-
-#To allow usages like
-#
-#    @handler(require_trust=True)
-#    def help_handler(self):
-#        pass
-handler = CommandHandler
-
 
 class Handler(object):
     """
@@ -181,20 +187,22 @@ class Handler(object):
         saves the event handlers to a dictionary
         """
         for i in dir(self):
-            if 'is_handler' in dir(self.__getattribute__(i)) and self.__getattribute__(i).is_handler:
+            if 'is_handler' in dir(self.__getattribute__(i)) \
+                and self.__getattribute__(i).is_handler:
+
                 self.handlers[i.split('_')[0]] = self.__getattribute__(i)
 
 
     
     @handler(require='trust')
-    def die_handler(self, connection, event):
+    def die_handler(self, _connection, _event):
         """
         Turns winnie off.
         """
         self.com.die()
 
     @handler
-    def channels_handler(self, connection, event):
+    def channels_handler(self, _connection, event):
         """
         Interact with the channel list, options are ['list', 'join', 'part']
         """
@@ -224,7 +232,7 @@ class Handler(object):
         self.com.update_channels()
 
     @handler
-    def help_handler(self, connection, event):
+    def help_handler(self, _connection, event):
         """
         Displays the help text
         """
@@ -243,7 +251,7 @@ class Handler(object):
             return "%s: %s" % (command, self.handlers[command].__doc__)
     
     @handler
-    def mode_handler(self, connection, event):
+    def mode_handler(self, _connection, event):
         """
         Allows you to view or set the mode for this channel. Options are ['shush', 'mimic', 'markov']
         """
@@ -281,14 +289,15 @@ class Handler(object):
         Sets the mode for this channel.
         """
         modes = self.c.modes
-        if type(modes) is not DictType: modes = {}
+        if type(modes) is not DictType:
+            modes = {}
         modes[channel] = mode
         self.c.modes = modes
 
         return "Going into %s mode" % mode
 
     @handler(require='trust')
-    def reload_handler(self, connection, event):
+    def reload_handler(self, _connection, _event):
         """
         Reloads responder engine.
         """
@@ -300,26 +309,35 @@ class Handler(object):
 
 
     @handler(require='trust')
-    def update_handler(self, connection, event):
+    def update_handler(self, _connection, _event):
+        """
+        Updates the phrase tables from Mr. Database
+        """
         self.com.update_phrases()
         return "Updated responses."
             
     @handler
-    def verbosity_handler(self, connection, event):
+    def verbosity_handler(self, _connection, event):
+        """
+        Allows user to interact with the verbosity setting
+        """
         message = event.arguments()[0].split(' ')
 
         if len(message) is 1:
             return "Verbosity is %s." % self.c.verbosity
         else:
             i = int(message[1])
-            if i in range(0,100):
+            if i in range(0, 101):
                 self.c.verbosity = i
                 return "Set verbosity to %s." % self.c.verbosity
             else:
                 return "Verbosity must be between 0 and 100."
 
     @handler(require='trust')
-    def set_handler(self, connection, event):
+    def set_handler(self, _connection, event):
+        """
+        Sets a memcached key/value
+        """
         message = event.arguments()[0].split(' ', 2)
 
         if len(message) is not 3:
@@ -329,7 +347,10 @@ class Handler(object):
                 return "Noted."
 
     @handler
-    def get_handler(self, connection, event):
+    def get_handler(self, _connection, event):
+        """
+        Retrieves a memcached value
+        """
         message = event.arguments()[0].split(' ')
 
         if len(message) is not 2:
@@ -342,13 +363,18 @@ class Handler(object):
                 return "I dunno."
 
     @handler
-    def whoami_handler(self, connection, event):
+    def whoami_handler(self, _connection, event):
+        """
+        Returns the full mask
+        """
         message = event.arguments()[0].split(' ')
 
         if len(message) is not 1:
             return "Usage is %swhoami" % self.handler_prefix
         else:
-            resp = "You are %s (trusted: %s)" % (event.user.mask, ('yes' if event.user.trusted else 'no'))
+            resp = "You are %s (trusted: %s)" % (event.user.mask,
+                ('yes' if event.user.trusted else 'no')
+            )
 
             if event.user.account:
                 resp = resp + " Registered as %s" % (event.user.account.email)
@@ -356,6 +382,9 @@ class Handler(object):
 
     @handler(require='trust')
     def run_handler(self, connection, event):
+        """
+        Executes Python code
+        """
         message = event.arguments()[0].split(' ', 1)
 
         if len(message) <= 1:
@@ -379,26 +408,26 @@ class Handler(object):
         if len(message) is not 2:
             return "Usage is %strust [mask]." % self.handler_prefix
         else:
-            to_trust = message[1]
+            nick = message[1]
             
-            if to_trust in [u for u in self.com.channels[event.target()].userdict]:
-                return "You must specify %s's full nick mask." % to_trust
+            if nick in [u for u in self.com.channels[event.target()].userdict]:
+                return "You must specify %s's full nick mask." % nick
 
-            user = self.get_usermask(to_trust)
+            user = self.get_usermask(nick)
             
             if not user.account:
-                return "%s doesn't have an account registered" % nm_to_n(to_trust)
+                return "%s doesn't have an account registered" % nm_to_n(nick)
 
             user.account.trusted = 1
 
-            return "%s is now trusted" % nm_to_n(to_trust)
+            return "%s is now trusted" % nm_to_n(nick)
     
     @handler
     def register_handler(self, connection, event):
         message = event.arguments()[0].split(' ') # register [email] [password]
 
         if len(message) is not 3:
-            return "Usage is %sregister [email] [password]" % self.handler_prefix
+            return "Usage is %sregister email password" % self.handler_prefix
         else:
             email, password = message[1:]
             
@@ -419,7 +448,7 @@ class Handler(object):
         message = event.arguments()[0].split(' ') # register [email] [password]
 
         if len(message) is not 3:
-            return "Usage is %sidentify [email] [password]" % self.handler_prefix
+            return "Usage is %sidentify email password" % self.handler_prefix
         else:
             email, password = message[1:]
 
@@ -439,7 +468,7 @@ class Handler(object):
     @handler
     def markov_handler(self, connection, event):
         _, query = event.arguments()[0].split(' ', 1) # markov [query]
-        return self.build_markov_chain(query)
+        return self.markov_from_query(query, table=self.markov_table)
 
     @handler(require='trust')
     def trace_handler(self, connection, event):
@@ -493,7 +522,8 @@ class Handler(object):
 
         try:
             for handler in self.handlers.keys():
-                if event.arguments()[0].startswith("%s%s" % (self.handler_prefix,handler)):
+                if event.arguments()[0].startswith(
+                        "%s%s" % (self.handler_prefix,handler)):
                     self.handlers[handler](connection, event)
                     return
             
@@ -518,9 +548,12 @@ class Handler(object):
         # Basically returns if a statement like 'x is/are/was/has a cat'
         is_indicated = self.indicated(message)
 
-        # Verify that someone made an indication, and that it doesn't end in the indicator
+        # Verify that someone made an indication, and that it doesn't end in
+        # the indicator
         if is_indicated and len(is_indicated[1]) > 1:
-            query =  intelligence.select(intelligence.q.keyphrase==is_indicated[1][0])
+            query =  intelligence.select(
+                intelligence.q.keyphrase==is_indicated[1][0]
+            )
 
             # If this intelligence doesn't exist already
             if query.count() == 0:
@@ -531,23 +564,28 @@ class Handler(object):
             else:
                 # Has this exact statement been said before?
                 if is_indicated[1][1] == query[0].value:
-                    statement = self.com.response('rebuttal', nm_to_n(event.source()))   
+                    statement = self.com.response(
+                        'rebuttal',
+                        nm_to_n(event.source())
+                    )   
                 # If he's conflicting what we already know
                 else:
                     # TELL HIM OFF & learn
-                    statement= self.com.response('preconception',
+                    statement = self.com.response('preconception',
                         (query[0].keyphrase,
                         query[0].indicator,
                         query[0].value)
                     )
-                    f = self.new_intelligence(event, is_indicated)                       
+                    f = self.new_intelligence(event, is_indicated)
                     
                     if self.roll_speak(event.target()):
                         self.com.queuemsg(event, event.target(), statement)
 
         # Nothing indicated, let's do a search mang
         elif self.roll_speak(event.target()):
-            result = self.generate_response(message, self.c.modes[event.target()])
+            result = self.generate_response(
+                message, self.c.modes[event.target()]
+            )
       
             if result:
                  # If something matches that phrase:
@@ -557,11 +595,11 @@ class Handler(object):
                     result #self.com.response('statement', result)
                 )
     
-    def search(self, query, limit=1, not_within=60): # not_within unit is minutes
+    def search(self, query, limit=1, not_within=60):
         """
         Does a natural language search on the database for [query], 
         results limited to [limit], and always older than the last
-        argument.
+        argument (in minutes).
         """
         return search_intelligence(query, limit, not_within)
 
@@ -576,15 +614,15 @@ class Handler(object):
                 return intel.original
 
         elif mode == 'markov':
-            return self.build_markov_chain(message, self.markov_table)
+            return self.markov_from_query(message, self.markov_table)
     
-    def build_markov_chain(self, query, table=None):
+    def markov_from_query(self, query, table=None):
         """
         Builds a markov chain from the search query
 
         TODO: build out a Markov class, it'll use winnie.data.Client
         """
-        if False: #len(query.split()) > 2: # TODO: factor out, didn't want to limit
+        if False: #len(query.split()) > 2: # TODO: factor out
             return "Limited to two query words"
         else:
             print "[%s]"%query
@@ -598,14 +636,8 @@ class Handler(object):
             
             if type(table) != DictType: table = {}
 
-            # For each statement, we're going to build up a table of word sequences
-            # and the words that follow.
-            for word in " ".join(results).split(" "):
-                table.setdefault( (w1, w2), [] ).append(word)
-                w1, w2 = w2, word
-           
-            table.setdefault( (w1, w2), [] ).append(lw)
-            
+            table.extend(self.generate_table(results))
+
             # Chain generation
             w1, w2 = lw, lw
             chain = ""
@@ -618,8 +650,21 @@ class Handler(object):
                 chain += " " + newword
                 w1, w2 = w2, newword
 
-            # TODO: regulate returns, allow option to return more than first sentence
+            # TODO: regulate returns, allow option to return more than first
+            # sentence
             return chain.split('. ')[0]
+
+    def generate_table(self, strings=[]):
+        # For each statement, we're going to build up a table of word
+        # sequences and the words that follow.
+        table = {}
+        for word in " ".join(results).split(" "):
+            table.setdefault( (w1, w2), [] ).append(word)
+            w1, w2 = w2, word
+       
+        table.setdefault( (w1, w2), [] ).append(lw)
+        return table
+
 
     def indicated(self, message):
         """
