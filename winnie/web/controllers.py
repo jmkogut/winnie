@@ -1,6 +1,4 @@
-import simplejson
-
-from winnie.data.model import *
+from winnie.data import model
 
 from winnie.protocols.irc.communicator import Communicator
 from framework.Controllers import JSONController as json
@@ -19,5 +17,5 @@ def channels(request, server=None):
 def statistics(request):
     c = Communicator()
     return {
-        'factoids': intelligence.select().count()
+        'factoids': model.intelligence.select().count()
     }
