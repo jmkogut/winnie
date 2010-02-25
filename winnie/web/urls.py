@@ -1,7 +1,7 @@
-from winnie.web.controllers import hello, goodbye, channels
+from winnie.web.controllers import *
 
 urls = (
-    ('^/gb', goodbye),
+    ('^/servers', servers),
     ('^/channels', channels),
-    ('.*', hello)
+    ('^/statistics', statistics),
 )

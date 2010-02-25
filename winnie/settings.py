@@ -29,3 +29,9 @@ DATABASE = "mysql://db9:doobienine@localhost/factoids"
 
 # Handler Prefix (for commands %channels, %help, etc)
 HANDLER_PREFIX = '%'
+
+# HTTP Address
+HTTP_ADDRESS = {
+    'host': '0.0.0.0',
+    'port': '8090'
+}

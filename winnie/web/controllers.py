@@ -1,16 +1,23 @@
+import simplejson
+
+from winnie.data.model import *
+
 from winnie.protocols.irc.communicator import Communicator
-from framework.Controllers import Controller as controller
+from framework.Controllers import JSONController as json
 
-@controller
-def hello(request):
-    return 'Hello, World!<br />You called %s' % request.path_info
-
-@controller
-def server(request):
-	return "Goodbye!"
-
-@controller
-def channels(request):
+@json
+def servers(request):
     c = Communicator()
-    
-    return ", ".join([channel for channel in c.channels])
+    return c.server_list
+
+@json
+def channels(request, server=None):
+    c = Communicator()
+    return [channel for channel in c.channels]
+
+@json
+def statistics(request):
+    c = Communicator()
+    return {
+        'factoids': intelligence.select().count()
+    }

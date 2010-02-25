@@ -8,7 +8,7 @@ from ircbot import SingleServerIRCBot
 
 from winnie.protocols.irc import responders
 
-from winnie.util import debug
+from winnie.util import debug, Singleton
 from winnie.data.cache import Client
 from winnie.data.model import phrase_category, phrase_list
 from winnie import settings
@@ -23,6 +23,8 @@ class Communicator(object, SingleServerIRCBot):
     """
     The IRC connection handler / intelligence gathering mechanism for winnie
     """
+
+    __metaclass__ = Singleton
 
     def __init__(self):
         """

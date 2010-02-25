@@ -3,7 +3,7 @@ Contains the processes in charge of responding to input
 """
 
 from winnie import settings
-from winnie.data.model import intelligence
+from winnie.data.model import intelligence, account, account_mask
 from winnie.util import log, debug
 
 import md5
@@ -30,7 +30,6 @@ class Processor(threading.Thread):
         self.com = communicator
         self.c = self.com.c
         self.running = True
-        self@running = True
 
         threading.Thread.__init__(self)
 
@@ -118,7 +117,6 @@ def handler(*args, **kwargs):
         )
 
         if allowed:
-            self.com.log("%s called %s with %s"%(params))
             try:
                 resp = method(*args)
             #except Exception, e:
@@ -681,6 +679,7 @@ class Handler(object):
             if message.startswith(v):
                 return None
         
+        message = message.lstrip('\\')
         message = message.lstrip('\\')
 
         split = message.split(' ')
