@@ -1,4 +1,3 @@
 // winnie index script
 
-:w
 

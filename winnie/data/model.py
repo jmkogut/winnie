@@ -31,6 +31,10 @@ class WinnieList(object):
     """
     Something to interact with the list of items
     """
+
+    class model(WinnieObject):
+        pass
+
     @staticmethod
     def get(id):
         '''

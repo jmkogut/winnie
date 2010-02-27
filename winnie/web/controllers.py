@@ -62,4 +62,9 @@ def web_index(request):
 
 @standard
 def read_static_file(request, file=None):
-    return Template(settings.STATIC_PATH, file, type='plain')
+    return Template(settings.STATIC_PATH, file, type=mimetype_for(file))
+
+def mimetype_for(filename):
+    _name,ext = filename.split('.')
+
+    return ext if ext in ['css', 'html'] else 'plain'

@@ -45,7 +45,7 @@ class Processor(threading.Thread):
             self.check_output()
 
             # Pause for half second
-            time.sleep(0.5)
+            time.sleep(0.25)
 
     def check_output(self):
         """
@@ -60,8 +60,9 @@ class Processor(threading.Thread):
                 # Unpack this message, calculate delay, pause for appropriate
                 # time
                 (target, phrase) = output.pop()                
-                delay = (len(tuple(phrase))*1.0 / settings.TYPING_SPEED*1.0)*60
-                time.sleep( delay )
+                # TODO: enable delay for certain things
+                #delay = (len(tuple(phrase))*1.0 / settings.TYPING_SPEED*1.0)*60
+                #time.sleep( delay )
                 
                 # Send off the message
                 self.com.privmsg(target, phrase)
@@ -77,7 +78,7 @@ class Processor(threading.Thread):
             # TODO: rework how stats are cached
             self.com.c.stats = {
                 'factoids': intelligence.select().count(),
-                'channels': [channel for channel in self.com.channels]
+                             'channels': [channel for channel in self.com.channels]
             }
             
             # Every active listener increments this, decrement it for justice!
@@ -379,7 +380,7 @@ class Handler(object):
             return resp
 
     @handler(require='trust')
-    def run_handler(self, connection, event):
+    def python_handler(self, connection, event):
         """
         Executes Python code
         """
@@ -700,7 +701,8 @@ class Handler(object):
                 keyphrase = is_indicated[1][0],
                 value = is_indicated[1][1],
                 indicator = is_indicated[0],
-                created=event.timestamp
+                created=event.timestamp,
+                target=event.target()
             )
 
             self.com.log(i)

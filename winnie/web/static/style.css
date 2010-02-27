@@ -2,8 +2,71 @@ body {
     font-size: 1em;
 }
 
-div.monitor {
-    width: 500px;
-    height: 300px;
-    border: 1px solid black;
+#content {
+    width: 900px;
+    margin-left: -450px;
+    position: absolute;
+    left: 50%;
+}
+#channels {
+    margin: 0px;
+    padding: 10px;
+    background: #eee;
+}
+#channels li {
+    display: block;
+    list-style-type: none;
+    background: #ccc;
+    padding: 5px;
+    margin: 5px 0px;
+}
+
+#channels li:hover {
+    background: #bbb;
+}
+
+#monitor {
+    height: 450px;
+    overflow: hidden;
+    background: #ddd;
+}
+.monitorwrapper {
+    padding: 10px;
+    padding-bottom: 40px;
+    background: #eee;
+}
+
+.event {
+
+}
+
+ul.controls {
+    margin: 0px;
+    padding; 0px;
+}
+
+ul.controls li {
+    list-style-type: none;
+    float: right;
+    padding: 5px 10px;
+    margin: 0px 0px 0px 5px;
+    background: #ddd;
+}
+ul.controls li:hover {
+    background: #bbb;
+}
+
+span.argument {
+    padding: 1px;
+    display: block;
+}
+
+span.source {
+    width: 75px;
+    display:block;
+    float: left;
+    text-align: right;
+    padding: 1px;
+    margin-right: 5px;
+    color: #555555;
 }

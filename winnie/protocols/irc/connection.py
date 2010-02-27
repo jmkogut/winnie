@@ -20,6 +20,17 @@ from irclib import nm_to_n
 from types import TupleType
 
 from datetime import datetime
+import md5
+
+def event_to_dict(event):
+    return {
+        'target': event.target(),
+        'source': event.source(),
+        'type': event.eventtype(),
+        'timestamp': event.timestamp.isoformat(),
+        'arguments': event.arguments(),
+        'ref': event.ref
+    }
 
 class ConnectionModel:
     """
@@ -27,7 +38,7 @@ class ConnectionModel:
     """
     class channel(model.WinnieList):
         class model(model.WinnieObject):
-            def __init__(self,name):
+            def __init__(self, name):
                 self.name=name
             def ref(self):
                 return self.name
@@ -38,18 +49,21 @@ class ConnectionModel:
         class model(model.WinnieObject):
             def __init__(self,line):
                 self.line = line
+
             def ref(self):
                 return self.line
 
         @classmethod
         def selectBy(cls, channel=None, since=None):
-            c = Connection().c # Get the main memcached instance
+            c = Connection() # Get the connection
             history = c.history[channel]
             send = []
 
-            for hash, line in history:
-                if hash == since: return send
-                send.append((hash,line))
+            for event in history:
+                if event['ref'] == since: return send
+                send.append(event)
+
+            return send
 
 
     class server(model.WinnieList):
@@ -86,6 +100,9 @@ class Connection(object, SingleServerIRCBot):
         self.c.log = []
         self.c.channels = []
         self.c.modes = {}
+
+        # Channel history
+        self.history = {}
 
         self.c.output = []
         self.c.to_join = [c for c in settings.IRC_CHANNELS]
@@ -239,7 +256,7 @@ class Connection(object, SingleServerIRCBot):
         Send events off to the responders
         """
         event.timestamp = datetime.now()
-        event.hash = md5.new(event.timestamp.isoformat()).hexdigest()[0:5]
+        event.ref = md5.new(event.timestamp.isoformat()).hexdigest()[0:5]
 
         self.add_history(event)
         self.log(event)
@@ -248,7 +265,14 @@ class Connection(object, SingleServerIRCBot):
 
     def add_history(self, event):
         # Max history hardcoded
-        history = self.c.history[event.target()]
+        max = 20
+        
+        history = self.history[event.target()]
+
+        if len(history) is max: history.pop()
+        history.insert(0, event_to_dict(event))
+
+        self.history[event.target()] = history
 
     def update_channels(self):
         """
@@ -264,6 +288,7 @@ class Connection(object, SingleServerIRCBot):
         if channel not in [chan for chan in self.channels]:
             self.log("Joining %s" % channel)
             self.connection.join(channel)
+            self.history[channel] = []
 
     def part(self, channel):
         """
