@@ -20,10 +20,6 @@ IRC_CHANNELS = (
 #    '#trees'
 )
 
-TRUSTED_USERS = (
-    "db9!db9@64.79.219.85",
-)
-
 # The db connection string
 DATABASE = "mysql://db9:doobienine@localhost/factoids"
 

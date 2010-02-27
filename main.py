@@ -6,12 +6,12 @@ the IRC connection
 """
 
 if __name__ == '__main__':
-    from winnie.protocols.irc import communicator
+    from winnie.protocols.irc import connection
     from winnie.web import server
 
     try:
         # Start these processes
-        win = communicator.Communicator()
+        win = connection.Connection()
         srv = server.Server()
 
         srv.communicator = win

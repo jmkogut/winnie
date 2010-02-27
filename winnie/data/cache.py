@@ -1,5 +1,5 @@
-from winnie.util import debug
-from winnie.util import Singleton
+from winnie.util.logger import debug
+from winnie.util.singletons import Singleton
 
 import memcache
 

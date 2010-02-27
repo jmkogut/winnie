@@ -1,8 +1,8 @@
-from winnie.web.controllers import json_api, echo
+from winnie.web.controllers import simple_api, log, echo
 
 routes = (
-    ('^/(?P<entity>\w+)(/(?P<action>\w+)(/(?P<id>[0-9]+))?)?', json_api),
-#    ('^/servers', servers),
+    ('^/log/(?P<channel>#\w+)(/(?P<since>\w+))', log),
+    ('^/(?P<entity>\w+)(/(?P<action>\w+)(/(?P<id>[0-9]+))?)?', simple_api),
 #    ('^/channels', channels),
 #    ('^/channels/(?P<channel>.*)/info', channel_info),
 #    ('^/info', info),

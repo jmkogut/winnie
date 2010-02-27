@@ -1,7 +1,7 @@
 import sys
 sys.path.append('..')
 
-from winnie.util import Singleton
+from winnie.util.singletons import Singleton
 
 class Singletest:
     __metaclass__ = Singleton

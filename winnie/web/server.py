@@ -3,9 +3,12 @@ import threading
 from paste import httpserver
 from framework.Router import Router
 
-from winnie.util import Singleton
-from winnie.web.urls import urls
+from winnie.util.logger import debug
+from winnie.util.singletons import Singleton
+from winnie.web import routes
 from winnie.settings import HTTP_ADDRESS as address
+
+from framework.Controllers import JSONController as json
 
 class Server(threading.Thread):
     """
@@ -20,14 +23,21 @@ class Server(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        self.router = Server.build_routes(urls)
+        self.router = Server.build_routes()
         Server.run_server(self.router, address)
     
     @staticmethod
-    def build_routes(routes):
+    def build_routes():
         router = Router()
-        for (route,handler) in routes:
+        for (route,handler) in routes.routes:
+            route += '/?$'
+            debug("Added %s for %s" % (handler.handlername, route))
             router.add_route(route, handler)
+        
+        # Listing
+        router.add_route('^',
+            json(lambda request: [(handler.handlername, route) for (route, handler) in routes.routes])
+        )
 
         return router
 

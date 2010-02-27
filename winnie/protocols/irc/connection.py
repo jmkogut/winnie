@@ -8,9 +8,11 @@ from ircbot import SingleServerIRCBot
 
 from winnie.protocols.irc import responders
 
-from winnie.util import debug, Singleton
+from winnie.util.logger import debug
+from winnie.util.singletons import Singleton
+
 from winnie.data.cache import Client
-from winnie.data.model import phrase_category, phrase_list
+from winnie.data import model
 from winnie import settings
 
 from irclib import nm_to_n
@@ -19,7 +21,48 @@ from types import TupleType
 
 from datetime import datetime
 
-class Communicator(object, SingleServerIRCBot):
+class ConnectionModel:
+    """
+    Holds a few data classes for the communicator
+    """
+    class channel(model.WinnieList):
+        class model(model.WinnieObject):
+            def __init__(self,name):
+                self.name=name
+            def ref(self):
+                return self.name
+    
+        select = classmethod(lambda cls: [cls.model(chan) for chan in Connection().channels])
+ 
+    class log(model.WinnieList):
+        class model(model.WinnieObject):
+            def __init__(self,line):
+                self.line = line
+            def ref(self):
+                return self.line
+
+        @classmethod
+        def selectBy(cls, channel=None, since=None):
+            c = Connection().c # Get the main memcached instance
+            history = c.history[channel]
+            send = []
+
+            for hash, line in history:
+                if hash == since: return send
+                send.append((hash,line))
+
+
+    class server(model.WinnieList):
+        class model(model.WinnieObject):
+            def __init__(self,server,port):
+                self.server = server
+                self.port = port
+            def ref(self):
+                return (self.server,self.port)
+
+        select = classmethod(lambda cls: [cls.model(*server) for server in Connection().server_list])
+
+class Connection(object, SingleServerIRCBot):
     """
     The IRC connection handler / intelligence gathering mechanism for winnie
     """
@@ -58,8 +101,8 @@ class Communicator(object, SingleServerIRCBot):
         Caches phrases that we're going to need so no future
         DB lookups are needed for them
         """
-        for cat in [phrase.category for phrase in phrase_category.select()]:
-            l = phrase_list(cat)
+        for cat in [phrase.category for phrase in model.phrase_category.select()]:
+            l = model.phrase_list(cat)
             self.__dict__[cat+'s'] = l
             self.log("%s: %s" % (cat, l))
 
@@ -196,8 +239,16 @@ class Communicator(object, SingleServerIRCBot):
         Send events off to the responders
         """
         event.timestamp = datetime.now()
+        event.hash = md5.new(event.timestamp.isoformat()).hexdigest()[0:5]
+
+        self.add_history(event)
         self.log(event)
+
         self.handler.handle(connection, event)
+
+    def add_history(self, event):
+        # Max history hardcoded
+        history = self.c.history[event.target()]
 
     def update_channels(self):
         """

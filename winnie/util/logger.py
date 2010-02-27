@@ -46,30 +46,6 @@ def debug_print(message, time, urgency):
     #
     #self.c.log = log
 
-def singleton(cls):
-    instances = {}
-    def getinstance():
-        if cls not in instances:
-            instances[cls] = cls()
-        return instances[cls]
-    return getinstance
-
-class Singleton(type):
-    """
-    To use:
-    from winnie.util import Singleton
-    class Foo:
-        __metaclass__ = Singleton
-    """
-    def __init__(cls, name, bases, dic):
-        super(Singleton, cls).__init__(name, bases, dic)
-        cls.instance = None
-
-    def __call__(cls, *args, **kw):
-        if cls.instance is None:
-            cls.instance = super(Singleton, cls).__call__(*args, **kw)
-        return cls.instance
-
 def log(method):
     """
     Decorator: will log the method name and what it was called with

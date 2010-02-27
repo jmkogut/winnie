@@ -4,7 +4,7 @@ Contains the processes in charge of responding to input
 
 from winnie import settings
 from winnie.data.model import intelligence, account, account_mask
-from winnie.util import log, debug
+from winnie.util.logger import log, debug
 
 import md5
 import time
