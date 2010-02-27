@@ -2,7 +2,7 @@ body {
     font-size: 1em;
 }
 
-#content {
+li#content {
     width: 900px;
     margin-left: -450px;
     position: absolute;
@@ -69,4 +69,33 @@ span.source {
     padding: 1px;
     margin-right: 5px;
     color: #555555;
+}
+
+#container {
+    width:100%;
+    overflow:hidden;
+    position:relative;
+    height:200px;
+}
+
+.horizontal {
+    width:100%;
+    position:absolute;
+    margin:20px 0;
+    padding:20px;
+    background: #7BD25F;
+}
+.horizontal span {
+    
+}
+.right {
+    left:20%;
+    margin-left:-100px;
+    text-align:left;
+}
+
+.left {
+    right:20%;
+    margin-right:-100px;
+    text-align:right;
 }
