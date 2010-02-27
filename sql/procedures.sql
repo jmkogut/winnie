@@ -10,11 +10,11 @@ BEGIN
 
     SELECT
         id,
-        MATCH (keyphrase, value) AGAINST (query) AS score,
+        MATCH (keywords) AGAINST (query) AS score,
         lastused
     FROM intelligence
     WHERE (
-        MATCH (keyphrase, value) AGAINST (query) > 0
+        MATCH (keywords) AGAINST (query) > 0
     
         AND (
             lastused IS NOT NULL
