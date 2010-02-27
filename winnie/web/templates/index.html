@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"> 
+    <head> 
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" /> 
+
+        <title>winnie says welcome</title> 
+
+        <link rel="stylesheet" type="text/css" media="print" href="/static/style.css" />
+
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js"></script>
+        <script type="text/javascript">
+            function make_request(url, callback) {
+                $.getJSON(url, function(data) {
+                    if (data.error) {
+                        $("h3.etitle").text(data.error[0])
+                        $("span.emessage").text(data.error[1])
+                    } else {
+                        callback(data);
+                    }
+                });
+            }
+
+            function set_channel(channel) {
+                $("div.channels").hide();
+                $("div.monitor").attr("channel", channel);
+                $("div.monitor").attr("ref", "");
+
+                setInterval(update_monitor, 2000);
+                //update_monitor();
+            }
+
+            function update_monitor() {
+                get_log(
+                    $("div.monitor").attr("channel"),
+                    $("div.monitor").attr("ref"),
+                    function(data) {
+                        data.response.reverse();
+                        $.each(data.response, function(i, e) {
+                            $("<div/>").text(e.arguments[0]).appendTo("div.monitor");
+                            $("div.monitor").attr("ref", e.ref);
+                        });
+                    });
+            }
+
+            function get_list(entity, callback) {
+                make_request("/"+entity+"/list", callback);
+            }
+
+            function get_entity(entity, ref, callback) {
+                make_request("/"+entity+"/get/"+ref, callback);
+            }
+            
+            function get_log(channel, ref, callback) {
+                var url = (ref=="") ? "/log/"+channel : "/log/"+channel+"/"+ref;
+                make_request(url.replace("#","_"), callback);
+            }
+
+
+            $(document).ready(function () {
+                // Pulls a list of all channels
+                get_list("channel", function(data){
+                    $.each(data.response, function(i, channel){
+                        $("<li/>").text(channel).click(function() {
+                            set_channel(this.innerText);
+                        }).appendTo("ul#channels");
+                    });
+                });
+            });
+        </script>
+    </head> 
+
+    <body>
+        <div id="content">
+
+            <div class="channels">
+                <span class="title">channels</span>
+                <ul id="channels"></ul>
+            </div>
+
+            <div class="errors">
+                <h3 class="etitle">&nbsp;</h3>
+                <span class="emessage">&nbsp;</span>
+            </div>
+
+            <div class="monitor">
+                &nbsp;
+            </div>
+        </div>
+    </body>
+</html>

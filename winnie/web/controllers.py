@@ -1,8 +1,13 @@
 from winnie.data import model
+from winnie import settings
+
 from winnie.protocols.irc.connection import Connection
 from winnie.protocols.irc.connection import ConnectionModel as cmodel
 
+from framework.Controllers import Controller as standard
 from framework.Controllers import JSONController as json
+from framework.Template import Template
+
 from winnie import errors
 
 @json
@@ -34,7 +39,7 @@ def simple_api(request, entity=None, action=None, id=None):
 @json
 def log(request, channel=None, since=None):
     if not channel: raise errors.web.InvalidRequest("You must supply a channel")
-    return cmodel.log.selectBy(channel=channel, since=since)
+    return cmodel.log.selectBy(channel=channel.replace('_','#'), since=since)
 
 @json
 def info(request):
@@ -50,3 +55,11 @@ def info(request):
 @json
 def echo(request, str="Nothing entered"):
     return str
+
+@standard
+def web_index(request):
+    return Template(settings.TEMPLATES_PATH, 'index')
+
+@standard
+def read_static_file(request, file=None):
+    return Template(settings.STATIC_PATH, file, type='plain')

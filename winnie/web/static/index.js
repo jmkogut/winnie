@@ -1,0 +1,4 @@
+// winnie index script
+
+:w
+

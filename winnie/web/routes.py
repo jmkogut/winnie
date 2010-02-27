@@ -1,10 +1,8 @@
-from winnie.web.controllers import simple_api, log, echo
+from winnie.web.controllers import simple_api, read_static_file, log, web_index
 
 routes = (
-    ('^/log/(?P<channel>#\w+)(/(?P<since>\w+))', log),
+    ('^', web_index),
+    ('^/static/(?P<file>\w+\.\w+)', read_static_file),
+    ('^/log/(?P<channel>[_\w]+)(/(?P<since>\w+))?', log),
     ('^/(?P<entity>\w+)(/(?P<action>\w+)(/(?P<id>[0-9]+))?)?', simple_api),
-#    ('^/channels', channels),
-#    ('^/channels/(?P<channel>.*)/info', channel_info),
-#    ('^/info', info),
-    ('^/echo(/(?P<str>.*))?', echo),
 )
