@@ -1,5 +1,5 @@
-from winnie.util import debug
-from winnie.util import Singleton
+from winnie.util.logger import debug
+from winnie.util.singletons import Singleton
 
 import memcache
 
@@ -49,7 +49,7 @@ class Client(object):
             repr = "%s chars" % len("%s"%value)
         else: repr=value
 
-        self._update_index(new=key,delete=(value==None))
+        self._update_index(new=key,delete=False)
         return self.__dict__['client'].set(self.form(key), value)
     
     def form(self, key):

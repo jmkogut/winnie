@@ -20,12 +20,19 @@ IRC_CHANNELS = (
 #    '#trees'
 )
 
-TRUSTED_USERS = (
-    "db9!db9@64.79.219.85",
-)
-
 # The db connection string
 DATABASE = "mysql://db9:doobienine@localhost/factoids"
 
 # Handler Prefix (for commands %channels, %help, etc)
 HANDLER_PREFIX = '%'
+
+# HTTP Address
+HTTP_ADDRESS = {
+    'host': '0.0.0.0',
+    'port': '8090'
+}
+
+# Directory paths
+PATH = '/home/potbot/winnie/winnie'
+TEMPLATES_PATH = PATH + '/web/templates/'
+STATIC_PATH = PATH + '/web/static/'
