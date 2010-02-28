@@ -265,7 +265,7 @@ class Connection(object, SingleServerIRCBot):
 
     def add_history(self, event):
         # Max history hardcoded
-        max = 20
+        max = 100
         
         history = self.history[event.target()]
 

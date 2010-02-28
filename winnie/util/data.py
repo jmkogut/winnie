@@ -5,6 +5,8 @@ from winnie.lexer import Lexer
 from irclib import Event
 import datetime
 import re
+import os
+
 
 def create_keywords(max=50):
     to_index = model.intelligence.selectBy(keywords='')
@@ -37,6 +39,12 @@ def import_irc_log(filename=None, target=None, max=-1, threshold=4):
     time = '(?P<H>[\d]{2}):(?P<M>[\d]{2}):(?P<S>[\d]{2})'
     nick = '<\s+(?P<nick>.+)>'
 
+    ignored_targets = (
+        "#mp3passion"
+    )
+
+    if target in ignored_targets: return
+
     linehandlers = {}
     def group_to_event(group):
         e = Event('pubmsg', group['nick'], target, (group['message'],))
@@ -54,7 +62,8 @@ def import_irc_log(filename=None, target=None, max=-1, threshold=4):
         stats['lines'] += 1
         if stats['lines'] == max: break
         
-        if stats['lines'] % 10 == 0: print " -- %s lines read, %s/%s events saved" % (stats['lines'],stats['saved'],stats['events'])
+        # TODO print dict keys not tuple indexes
+        if stats['lines'] % 20 == 0: print " %s lines read, %s/%s events saved to %s" % (stats['lines'],stats['saved'],stats['events'], target)
         for pattern in linehandlers:
             match = re.match(pattern, line)
             if match:
@@ -66,7 +75,13 @@ def import_irc_log(filename=None, target=None, max=-1, threshold=4):
                         stats['saved'] += 1
 
 
-                
+def recursive_import_log(basedir=None, threshold=4):
+    def visit(to_index, dirname, names):
+        logfiles.extend([(dirname +'/'+ name,name.replace('.log','')) for name in names if (name.endswith(".log") and name.startswith("#"))])
+    
+    logfiles = []
+    os.path.walk(basedir, visit, logfiles)
+    [import_irc_log(filename, target, max=-1, threshold=4) for (filename,target) in logfiles]
 
 def save_event(event):
     i = model.intelligence(

@@ -1,101 +1,77 @@
 body {
-    font-size: 1em;
-}
-
-li#content {
-    width: 900px;
-    margin-left: -450px;
-    position: absolute;
-    left: 50%;
-}
-#channels {
-    margin: 0px;
-    padding: 10px;
-    background: #eee;
-}
-#channels li {
-    display: block;
-    list-style-type: none;
-    background: #ccc;
-    padding: 5px;
-    margin: 5px 0px;
-}
-
-#channels li:hover {
-    background: #bbb;
-}
-
-#monitor {
-    height: 450px;
-    overflow: hidden;
-    background: #ddd;
-}
-.monitorwrapper {
-    padding: 10px;
-    padding-bottom: 40px;
-    background: #eee;
-}
-
-.event {
-
-}
-
-ul.controls {
-    margin: 0px;
-    padding; 0px;
-}
-
-ul.controls li {
-    list-style-type: none;
-    float: right;
-    padding: 5px 10px;
-    margin: 0px 0px 0px 5px;
-    background: #ddd;
-}
-ul.controls li:hover {
-    background: #bbb;
-}
-
-span.argument {
-    padding: 1px;
-    display: block;
-}
-
-span.source {
-    width: 75px;
-    display:block;
-    float: left;
-    text-align: right;
-    padding: 1px;
-    margin-right: 5px;
-    color: #555555;
+    background-color: #dfdfdf;
 }
 
 #container {
-    width:100%;
-    overflow:hidden;
-    position:relative;
-    height:200px;
+    width: 800px;
+    position: absolute;
+    left: 50%;
+    margin-left: -400px;
 }
 
-.horizontal {
-    width:100%;
-    position:absolute;
-    margin:20px 0;
-    padding:20px;
-    background: #7BD25F;
-}
-.horizontal span {
-    
-}
-.right {
-    left:20%;
-    margin-left:-100px;
-    text-align:left;
+div.watch, div.detail {
+    padding: 10px;
+    clear: both;
 }
 
-.left {
-    right:20%;
-    margin-right:-100px;
-    text-align:right;
+.output {
+    background-color: white;
+    border-bottom: 1px solid gray;
+    border-top: 1px solid gray;
 }
+
+.output ul.items {
+    height: 500px;
+}
+.scrolled ul.items {
+    overflow: scroll;
+}
+.fixed ul.items {
+    overflow: hidden;
+}
+
+.output ul.items li {
+    list-style-type: none;
+    display: inline;
+}
+
+li .event {
+    padding: 5px;
+}
+
+li .event .source {
+    display: block;
+    float: left;
+    width: 80px;
+    text-align: right;
+}
+
+li .event .argument {
+    background: #ddd;
+    display: block;
+    width: 80%;
+    margin-left: 90px;
+}
+div.choices {
+    padding: 10px;
+    clear: both;
+}
+div.choices ul.items {
+    margin: 0px;
+    padding: 0px;
+}
+.clickable {}
+.clickable:hover {
+    font-weight: bold;
+}
+
+div.choices ul.items li {
+    list-style-type: none;
+    display: block;
+    padding: 10px;
+    margin: 5px;
+    float: left;
+}
+/*
+Winnie's pallete: http://www.colourlovers.com/palette/1120270/easter_peep
+*/

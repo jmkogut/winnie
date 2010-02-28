@@ -7,148 +7,57 @@
 
         <title>winnie says welcome</title> 
 
-        <link rel="stylesheet" type="text/css" media="screen" href="/static/style.css" />
         <link rel="stylesheet" type="text/css" media="screen" href="http://www.blueprintcss.org/blueprint/src/typography.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="/static/style.css" />
 
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js"></script>
+        <script type="text/javascript" src="/static/winnie.js"></script>
+
         <script type="text/javascript">
-            function make_request(url, callback) {
-                $.getJSON(url, function(data) {
-                    if (data.error) {
-                        $("h3.etitle").text(data.error[0])
-                        $("span.emessage").text(data.error[1])
-                    } else {
-                        callback(data);
-                    }
-                });
-            }
-
-            function set_channel(channel) {
-                    if (channel == "") {
-                        $("#channels").show(200);
-                        $("div#monitorcontent").html("");
-                    } else {
-                        $("#channels").hide(200);
-                    }
-
-                $("div#monitor").attr("channel", channel);
-                $("div#monitor").attr("ref", "");
-                $("div#monitor").attr("paused", 0);
-
-                update_controls();
-
-               $("div#monitor").attr("interval", setInterval(update_monitor, 2000));
-                //update_monitor();
-            }
-
-            function build_argument(e) {
-                var argument = $("<div/>").attr("class", "event");
-
-                argument.append($("<span/>").attr("class","source").text(e.source.split("!")[0]));
-                argument.append($("<span/>").attr("class","argument").text(e.arguments[0]));
-
-                return argument;
-            }
-
-            function update_monitor() {
-                if ($("div#monitor").attr("channel") != "" && $("div#monitor").attr("paused") == 0) {
-                    get_log(
-                        $("div#monitor").attr("channel"),
-                        $("div#monitor").attr("ref"),
-                        function(data) {
-                            data.response.reverse();
-                            $.each(data.response, function(i, e) {
-                                build_argument(e).appendTo("div#monitorcontent");
-
-                                $("div#monitor").animate({
-                                    scrollTop: $("div#monitorcontent").height()
-                                }, 10);
-
-                                $("div#monitor").attr("ref", e.ref);
-                            });
-                            });
-                }
-
-                if ($("div#monitor").attr("channel") == "") {
-                    clearInterval($("div#monitor").attr("interval"));
-                }
-            }
-
-            function get_list(entity, callback) {
-                make_request("/"+entity+"/list", callback);
-            }
-
-            function get_entity(entity, ref, callback) {
-                make_request("/"+entity+"/get/"+ref, callback);
-            }
-            
-            function get_log(channel, ref, callback) {
-                var url = (ref=="") ? "/log/"+channel : "/log/"+channel+"/"+ref;
-                make_request(url.replace("#","_"), callback);
-            }
-            
-            var controls = {
-                "channels": function(){ set_channel(""); },
-                "accounts": function() { set_user(""); ],
-
-                "pause": function(){ $("div#monitor").attr("paused",1); },
-                "resume": function(){ $("div#monitor").attr("paused",0); },
-
-            };
-
-            function update_controls() {
-                var ctls = [];
-
-                if ($("div#monitor").attr("channel") != "") {
-                    ctls.push("channels");
-    
-                    //ctls.push( ($("div#monitor").attr("paused")==0) ? "pause" : "resume" );
-                }
-                
-                $("ul.controls").html("")
-                $.each(ctls, function(i,item) {
-                        $("<li/>").text(item).click(function(){controls[item](); update_controls();}).appendTo("ul.controls")
-                });
-            }
-
-            $(document).ready(function () {
+            function onLoad() {
                 // Pulls a list of all channels
-                get_list("channel", function(data){
-                    $.each(data.response, function(i, channel){
-                        $("<li/>").text(channel).click(function() {
-                            set_channel(this.innerText);
-                        }).appendTo("ul#channels");
-                    });
-                });
-            });
+                //get_list("channel", function(data){
+                //    $.each(data.response, function(i, channel){
+                //        $("<li/>").text(channel).click(function() {
+                //            set_channel(this.innerText);
+                //        }).appendTo("ul#channels");
+                //    });
+                //});
+                
+                var winnie = new Winnie( $("div.choices"), $("div.watch"), $("div.detail"));
+                winnie.pick_channel();
+            }
+
+            $(document).ready(onLoad);
+
         </script>
     </head> 
 
     <body>
-        <p class="horizontal right"><span>winnie says hello</span></p>
 
-        <div id="content">
-
-
-            <div class="errors">
-                <h3 class="etitle">&nbsp;</h3>
-                <span class="emessage">&nbsp;</span>
-            </div>
-
-            <ul id="channels"></ul>
-
-
-
-            <div class="monitorwrapper">
-                <div id="monitor">
-                    <div id="monitorcontent">&nbsp;</div>
+        <div id="container">           
+            <div id="content">
+                <div class="choices">
+                    <h2>Explain the options</h2>
+                    <ul class="items">
+                        <li>Option One</li>
+                        <li>Option Two</li>
+                    </ul>
                 </div>
-                <ul class="controls">
-                </ul>
+                
+                <div class="watch output fixed">
+                    <ul class="items">
+                        <li>Item One</li>
+                        <li>Item Two</li>
+                    </ul>
+                </div>
+
+                <div class="detail output scrolled">
+                    <h3 class="title">&nbsp;</h3>
+                    <div class="summary">&nbsp;</div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <p class="horizontal left">&nbsp;</p>
     </body>
 </html>
