@@ -8,7 +8,9 @@ from ircbot import SingleServerIRCBot
 
 from winnie.protocols.irc import responders
 
-from winnie.util.logger import debug
+from winnie.util.logger import Logger
+logger = Logger()
+
 from winnie.util.singletons import Singleton
 
 from winnie.data.cache import Client
@@ -21,6 +23,7 @@ from types import TupleType
 
 from datetime import datetime
 import md5
+import Queue
 
 def event_to_dict(event):
     return {
@@ -56,7 +59,8 @@ class ConnectionModel:
         @classmethod
         def selectBy(cls, channel=None, since=None):
             c = Connection() # Get the connection
-            history = c.history[channel]
+            history = c.get_history(channel)
+            
             send = []
 
             for event in history:
@@ -94,44 +98,22 @@ class Connection(object, SingleServerIRCBot):
     
         self.c = Client(self.nick)
 
-        self.update_phrases()
-
         # Channel related things
-        self.c.log = []
-        self.c.channels = []
         self.c.modes = {}
 
         # Channel history
-        self.history = {}
+        self._history = {}
 
-        self.c.output = []
         self.c.to_join = [c for c in settings.IRC_CHANNELS]
+        
+        self.output = Queue.Queue(20)
 
         self.c.verbosity = settings.VERBOSITY
 
         self.processor = None
         self.handler = None
+        
         self.init_responders()
-
-    def update_phrases(self):
-        """
-        Caches phrases that we're going to need so no future
-        DB lookups are needed for them
-        """
-        for cat in [phrase.category for phrase in model.phrase_category.select()]:
-            l = model.phrase_list(cat)
-            self.__dict__[cat+'s'] = l
-            self.log("%s: %s" % (cat, l))
-
-    def response(self, category, message):
-        """
-        Returns a preformatted response
-        """
-        if message is None or len(message) is 0:
-            return None
-
-        response = random.choice(self.__dict__[category+'s'])
-        return response % message
 
     def init_responders(self):
         """
@@ -195,11 +177,7 @@ class Connection(object, SingleServerIRCBot):
         if (target == self.nick):
             target = nm_to_n(event.source())
 
-        output = self.c.output
-        output.insert(0, (target, phrase))
-        self.c.output = output
-
-        self.log("Added output")
+        self.output.put((target,phrase))
 
     def privmsg(self, target, phrase):
         """
@@ -223,33 +201,26 @@ class Connection(object, SingleServerIRCBot):
     def log(self, thing, urgency='sys'):
         """
         Pretty format log messages
+        TODO: refactor it out that's what the fucking logger class if for
         """
         t = type(thing)
 
         # An intelligence learned
         if '__dict__' in dir(t) and t.__name__ == 'intelligence':
-            debug("Discovered: %s [%s] %s" % (
-                thing.keyphrase,
-                thing.indicator,
-                thing.value
-            ), thing.created, 'add')
+            logger.learned(thing.message)
+
         # An outgoing message
         elif t is TupleType and len(thing) is 2:
             target, phrase = thing
-            debug("[%s] %s> %s" % (
-                target,
-                self.nick,
-                phrase
-            ), urgency='out')
+            logger.outgoing("%s/%s> %s" % (target, self.nick, phrase))
+
         # If this is an IRC event
         elif 'timestamp' in dir(thing):
-            debug("[%s] %s> %s" % (
-                thing.target(),
-               nm_to_n(thing.source()),
-                thing.arguments()[0]
-            ), thing.timestamp, 'in')
+            target, source, phrase = (thing.target(), nm_to_n(thing.source()), thing.message)
+            logger.incoming("%s/%s> %s" % (target, source, phrase))
+
         else: #It's just a string
-            debug(thing, urgency=urgency)
+            logger.info(thing)
 
     def message_handler(self, connection, event):
         """
@@ -257,6 +228,7 @@ class Connection(object, SingleServerIRCBot):
         """
         event.timestamp = datetime.now()
         event.ref = md5.new(event.timestamp.isoformat()).hexdigest()[0:5]
+        event.message = event.arguments()[0].strip()
 
         self.add_history(event)
         self.log(event)
@@ -265,36 +237,37 @@ class Connection(object, SingleServerIRCBot):
 
     def add_history(self, event):
         # Max history hardcoded
-        max = 100
+        max = 40
         
-        history = self.history[event.target()]
+        history = self.get_history(event.target())
 
         if len(history) is max: history.pop()
         history.insert(0, event_to_dict(event))
 
-        self.history[event.target()] = history
-
-    def update_channels(self):
-        """
-        Update memcached with the chanlist
-        """
-        chans = [chan for chan in self.channels]
-        self.c.channels = chans
+        self.set_history(event.target(), history)
 
     def join(self, channel):
         """
         Join in on a channel
         """
         if channel not in [chan for chan in self.channels]:
-            self.log("Joining %s" % channel)
+            logger.add("channel %s" % channel)
             self.connection.join(channel)
-            self.history[channel] = []
 
     def part(self, channel):
         """
         Storm out of a channel
         """
-        self.update_channels()
         if channel in [c for c in self.channels]:
             self.log("Parting %s" % channel)
             self.connection.part(channel)
+
+    def get_history(self, channel):
+        try:
+            return self._history[channel]
+        except KeyError, e:
+            return []
+
+    def set_history(self, channel, history):
+        self._history[channel] = history
+

@@ -3,7 +3,9 @@ import threading
 from paste import httpserver
 from framework.Router import Router
 
-from winnie.util.logger import debug
+from winnie.util.logger import Logger
+logger = Logger()
+
 from winnie.util.singletons import Singleton
 from winnie.web import routes
 from winnie.settings import HTTP_ADDRESS as address
@@ -31,7 +33,7 @@ class Server(threading.Thread):
         router = Router()
         for (route,handler) in routes.routes:
             route += '/?$'
-            debug("Added %s for %s" % (handler.handlername, route))
+            logger.info("Added %s for %s" % (handler.handlername, route))
             router.add_route(route, handler)
         
         # Listing

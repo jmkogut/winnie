@@ -3,7 +3,7 @@ TYPING_SPEED = 750 # Mine is ~550, 750 is exceedingly high
 
 # Verbosity, the percentage of the time that winnie will 
 # look for something to say in response.
-VERBOSITY = 10
+VERBOSITY = 90
 
 # LOGSIZE
 LOGSIZE = 50
@@ -17,7 +17,7 @@ IRC = (
 IRC_CHANNELS = (
     '#'+IRC[0],                     # join the channel with our nickname
     '#bupki',
-#    '#trees'
+    '#trees'
 )
 
 # The db connection string
@@ -34,5 +34,5 @@ HTTP_ADDRESS = {
 
 # Directory paths
 PATH = '/home/potbot/winnie/winnie'
-TEMPLATES_PATH = PATH + '/web/templates/'
-STATIC_PATH = PATH + '/web/static/'
+TEMPLATES_PATH = PATH + '/web/static/'
+STATIC_PATH = TEMPLATES_PATH

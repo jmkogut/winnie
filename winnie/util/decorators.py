@@ -28,3 +28,14 @@ def singleton(cls):
         return instances[cls]
     return getinstance
 
+def log(method):
+    """
+    Decorator: will log the method name and what it was called with
+    """
+    def wrapper(*args):
+        debug("%s called with %s"%(method.__name__, args))
+        resp = method(*args)
+        debug("%s returned %s"%(method.__name__, resp))
+        return resp
+
+    return wrapper

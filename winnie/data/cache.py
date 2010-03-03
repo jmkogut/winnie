@@ -1,8 +1,8 @@
-from winnie.util.logger import debug
+import memcache
 from winnie.util.singletons import Singleton
 
-import memcache
-
+from winnie.util.logger import Logger
+logger = Logger()
 
 class Client(object):
     __metaclass__ = Singleton
@@ -23,7 +23,7 @@ class Client(object):
 
     def __init__(self, instance_name, connection=('localhost',)):
         
-        debug("Setting cache instance name to %s" % instance_name)
+        logger.info("Setting cache instance name to %s" % instance_name)
 
         self.__dict__['name'] = instance_name
         self.__dict__['client'] = memcache.Client(connection)

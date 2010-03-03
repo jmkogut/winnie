@@ -10,7 +10,9 @@ from types import *
 import simplejson
 
 sqlhub.processConnection = connectionForURI(settings.DATABASE)
-sqlhub.processConnection.debug = False
+
+def sql_debug(set=True):
+    sqlhub.processConnection.debug = set
 
 class WinnieObject(object):
     """
@@ -75,10 +77,21 @@ class intelligence(WinnieSQLObject):
         self._score = value
 
     def _get_original(self):
-        return "%s %s %s" % (self.keyphrase, self.indicator, self.value)
+        return self.message
 
     def _set_original(self, value):
         pass
+
+    def use(self):
+        self.lastused = datetime.now()
+        return self.message
+
+class fake_intel:
+    def __init__(self,msg="No intelligence supplied."):
+        self.msg = msg
+    def use(self):
+        print self.msg
+        return None
 
 class account(WinnieSQLObject):
     """
@@ -105,16 +118,6 @@ class account_mask(WinnieSQLObject):
     class sqlmeta:
         fromDatabase = True
 
-class phrase(WinnieSQLObject):
-    """
-    Pre-organized phrases or words
-    """
-    category = ForeignKey('phrase_category')
-
-    class sqlmeta:
-        fromDatabase = True
-
-
 def search_intelligence(query, limit=0, lastused=60):
     """
     Called the stored procedure to search for a phrase against the db
@@ -123,7 +126,7 @@ def search_intelligence(query, limit=0, lastused=60):
         query = (query,)
 
     if type(query) not in (ListType, TupleType):
-        return
+        return fake_intel("Your fucking query wasn't a list or tuple")
 
     results = []
     for searchphrase in query:
@@ -133,28 +136,14 @@ def search_intelligence(query, limit=0, lastused=60):
                 intelligence.searchQuery % (searchphrase, lastused)
             )
         )
-    
-    intel = [intelligence.get(result[0]) for result in (results if (limit == 0 or limit > len(results)) else results[0:limit])]
-    return (intel[0] if limit is 1 else intel) if intel else None
 
-class phrase_category(WinnieSQLObject):
-    """
-    A phrase category
-    """
-    class sqlmeta:
-        fromDatabase = True
+    intel = [intel_for_result(result) for result in (results if (limit == 0 or limit > len(results)) else results[0:limit])]
+    error = fake_intel("Intel was empty")
 
-def phrase_list(category):
-    """
-    Queries for a list of phrases through a search in the db
-    """
+    return (intel[0] if limit is 1 else intel) if intel else (error if limit is 1 else [error])
+    #TODO refactor
 
-    return tuple([row.response for row in
-        phrase.select(
-            (phrase.q.categoryID == phrase_category.q.id) &
-            (phrase_category.q.category == category) &
-            (phrase.q.enabled == 1)
-        )
-    ])
-
-
+def intel_for_result(result):
+    intel = intelligence.get(result[0])
+    intel.score = result[1]
+    return intel

@@ -5,23 +5,33 @@ The primary startup script for winnie. Initializes
 the IRC connection 
 """
 
-if __name__ == '__main__':
-    from winnie.protocols.irc import connection
-    from winnie.web import server
+from winnie.protocols.irc import connection as IRC
+from winnie.web import server as HTTP
 
+
+
+def main():
     try:
+
+        #from pympler.muppy import tracker
+        #memory_tracker = tracker.SummaryTracker()
+
         # Start these processes
-        win = connection.Connection()
-        srv = server.Server()
+        irc = IRC.Connection()
+                
+        #irc.memory_tracker = memory_tracker
 
-        srv.communicator = win
+        #http = HTTP.Server()
+        #http.communicator = irc
+        #http.start()
 
-        srv.start()
-        win.start()
+        irc.start()
 
     except KeyboardInterrupt, e:
-        win.running = False
-        win.die()
+        irc.running = False
+        irc.die()
     
+if __name__ == '__main__':
+    main()
 else:
     print 'Usage: python ./main.py'

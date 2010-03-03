@@ -108,7 +108,7 @@ function Winnie(choices, output, detail)
     this.watchContainer = output;
     this.detailContainer = detail;
 
-    this.updateInterval = 1500;
+    this.updateInterval = 3000;
 }
 
 Winnie.prototype.view_channel = function(channel)
@@ -128,17 +128,23 @@ Winnie.prototype.view_channel = function(channel)
                 $(panel).attr("channel").replace("#","_"),
                 $(panel).attr("ref"),
                 function(data) {
-                    data.reverse();
-                    events = [];
-                    $.each(data, function(i, e) {
-                        if (e.ref != $(panel).attr("ref")) {
-                            events.push(winnie.format_event(e));
-                            $(panel).attr("ref", e.ref);
-                        }
-                    });
+                    // So we know the last item retrieved
+                    if (data.length > 0) {
+                        $(panel).attr("ref", data[0].ref);
 
-                    panel.add_items(events);
+                        data.reverse();
+                        events = [];
+                        $.each(data, function(i, e) {
+                            /* ref check
+                            if (e.ref != $(panel).attr("ref"))
+                            */
+                            events.push(winnie.format_event(e));
+                        });
+
+                        panel.add_items(events);
+                    }
                 }
+             
             );
         },
         function(panel) { // Watcher
@@ -193,12 +199,18 @@ Winnie.prototype.get_choices = function(help, getter, handler)
 
 Winnie.prototype.view_mask = function(account_mask)
 {
-    console.log("Event incoming.");
-
     $(this.watchContainer).hide();
     $(this.detailContainer).show();
 
     this.set_detail("account mask", account_mask);
+}
+
+Winnie.prototype.view_event = function(e)
+{
+    $(this.watchContainer).hide();
+    $(this.detailContainer).show();
+
+    this.set_detail("event", e);
 }
 
 Winnie.prototype.set_detail = function(name, summary) {
@@ -223,6 +235,10 @@ Winnie.prototype.format_event = function(e)
     
     $(source).clickable(function() {
         winnie.view_mask(e.source);
+    });
+
+    $(source).dblclick(function() {
+        winnie.view_event(e);
     });
 
     return argument;   

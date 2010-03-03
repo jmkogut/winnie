@@ -9,20 +9,21 @@ CREATE PROCEDURE search_intelligence (
 BEGIN
 
     SELECT
-        id,
+        id, 
         MATCH (keywords) AGAINST (query) AS score,
         lastused
     FROM intelligence
     WHERE (
-        MATCH (keywords) AGAINST (query) > 0
-    
+        MATCH (keywords) AGAINST (query) > 0 
+
         AND (
-            lastused IS NOT NULL
-            AND timestampdiff(MINUTE , lastused, NOW()) > minutes_since
-        )
-    )
+            lastused IS NULL
+            OR timestampdiff(MINUTE , lastused, NOW()) > minutes_since
+        )   
+    )   
 
     ORDER BY score DESC, lastused ASC;
+
 END//
 
 delimiter ;

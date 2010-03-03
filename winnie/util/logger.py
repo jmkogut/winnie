@@ -1,59 +1,63 @@
 from datetime import datetime
-from types import StringType, FunctionType
 
-urgencies = {
-    'add':'++',
-    'sub':'--',
-    'in':'<-',
-    'out':'->',
-    'notice':'!!',
-    'sys':'**',
-}
+from winnie.util.singletons import Singleton
 
-def debug(item=None, time=datetime.now(), urgency='sub'):
-    if urgency not in urgencies:
-        raise Exception('Not a valid logging urgency')
+def action(sign=''):
+    '''
+    Decorator to allow for
+        
+        @action('%%')
+        def crazytown(item): return "THIS IS CRAZY[%s]" % item.__repr__()
+    '''
+    def wrap(f):
+        def wrapped_f(instance, item):
+            instance.log( sign, f(item) )
+        return wrapped_f
+    return wrap
 
-    if type(item) == FunctionType:
-        def wrapper(*args):
-            resp = item(*args)
-            debug_print(resp, time, urgency)
-            return resp
-        return wrapper
-    elif type(item) == StringType:
-        debug_print(item, time, urgency)
-
-def debug_print(message, time, urgency):
+class Logger:
     """
-    debug_print("My foo!", datetime.now(), 'out') # results in
-    " -> [15:21.33] My foo!"
+    logger = Logger()
+    logger.learned(intelligence.message)
+
+    # Results in
+    # print '++', datetime.now(), "Learned: ", message
+    # ++ [15:22.23] Learned: somehow I doubt that's believable
     """
-    timeformat = "%H:%M %S"   
+    __metaclass__ = Singleton
 
-    if 'strftime' in dir(time):
-        out = " %s [%s] %s" % (urgencies[urgency], time.strftime(timeformat), message)
-    else:
-        out = " %s [%s] %s" % (urgencies[urgency], time, message)
 
-    print out
-    # WTF, was I high?
-    #log = cache.get_cache()
-    #log.append((datetime.now(), out))
+    @action('++')
+    def learned(intel): return 'Learned: %s' % item.__repr__()
 
-    ## Don't let log go past LOGSIZE
-    #if (len(log) is settings.LOGSIZE):
-    #    log.pop(0)
-    #
-    #self.c.log = log
+    @action('++')
+    def add(item): return 'Adding %s' % item
 
-def log(method):
-    """
-    Decorator: will log the method name and what it was called with
-    """
-    def wrapper(*args):
-        debug("%s called with %s"%(method.__name__, args))
-        resp = method(*args)
-        debug("%s returned %s"%(method.__name__, resp))
-        return resp
+    @action('--')
+    def rem(item): return 'Removing %s' % item
 
-    return wrapper
+    @action('<-')
+    def incoming(item): return item
+
+    @action('->')
+    def outgoing(item): return item
+    
+    @action('!!')
+    def notice(item): return item
+
+    @action('**')
+    def info(item): return item
+
+    def log(self, sign, message, time=datetime.now()):
+        """
+        logger.log('++', 'Added an awesome statement') # results in 
+        print " ++ [15:21 33] Added an awesome statement"
+        """
+        timeformat = "%H:%M %S"   
+
+        if 'strftime' in dir(time):
+            out = " %s [%s] %s" % (sign, time.strftime(timeformat), message)
+        else:
+            out = " %s [%s] %s" % (sign, time, message)
+
+        print out
