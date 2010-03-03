@@ -16,12 +16,11 @@ IRC = (
 
 IRC_CHANNELS = (
     '#'+IRC[0],                     # join the channel with our nickname
-    '#bupki',
     '#trees'
 )
 
 # The db connection string
-DATABASE = "mysql://db9:doobienine@localhost/factoids"
+DATABASE = "mysql://doobie:doobienine@localhost/winnie"
 
 # Handler Prefix (for commands %channels, %help, etc)
 HANDLER_PREFIX = '%'
@@ -33,6 +32,6 @@ HTTP_ADDRESS = {
 }
 
 # Directory paths
-PATH = '/home/potbot/winnie/winnie'
+PATH = '/home/winnie/projects/winnie'
 TEMPLATES_PATH = PATH + '/web/static/'
 STATIC_PATH = TEMPLATES_PATH
