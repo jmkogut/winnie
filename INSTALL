@@ -4,7 +4,7 @@ Instead of giving you details, I'll do a quick rundown of how I install winnie.
 
 
  ** Install the libraries winnie depends on.
-    winnie@pooh:~/projects/winnie$ sudo apt-get install python-irclib \
+-   winnie@pooh:~/projects/winnie$ sudo apt-get install python-irclib \
 					python-sqlobject python-yaml \
 					python-simplejson python-mysqldb \
 					python-memcache python-paste \
@@ -13,25 +13,30 @@ Instead of giving you details, I'll do a quick rundown of how I install winnie.
  ** Install jmkogut/framework from github (for winnie.web)
 
  ** Install the Python natural language processing toolkit.
-    winnie@pooh:~/projects/winnie$ easy_install nltk
+-   winnie@pooh:~/projects/winnie$ easy_install nltk
 
  ** Install the NLTK stopwords list. (winnie uses these to index content)
-    winnie@pooh:~/projects/winnie$ python
-    >>> import nltk
-    >>> nltk.download()
+-   winnie@pooh:~/projects/winnie$ python
+-   >>> import nltk
+-   >>> nltk.download()
     NLTK Downloader
     ---------------------------------------------------------------------------
     d) Download      l) List      c) Config      h) Help      q) Quit
     ---------------------------------------------------------------------------
-    Downloader> d
 
+-   Downloader> d
     Download which package (l=list; x=cancel)?
       Identifier> stopwords
     Downloading package 'stopwords' to /home/winnie/nltk_data...
       Unzipping corpora/stopwords.zip.
 
+-   Downloader> d maxent_treebank_pos_tagger
+    Downloading package 'maxent_treebank_pos_tagger' to
+        /home/winnie/nltk_data...
+      Unzipping taggers/maxent_treebank_pos_tagger.zip.
+
  ** Login to MySQL
-    db9@pooh:~$ mysql -u winnie -p
+-   db9@pooh:~$ mysql -u winnie -p
     Enter password: 
     Welcome to the MySQL monitor.  Commands end with ; or \g.
     Your MySQL connection id is 54
@@ -39,11 +44,11 @@ Instead of giving you details, I'll do a quick rundown of how I install winnie.
     Type 'help;' or '\h' for help. Type '\c' to clear the buffer.
 
  ** Create the database for her to use
-    mysql> create database winnie;
+-   mysql> create database winnie;
     Query OK, 1 row affected (0.00 sec)
 
  ** Edit winnie's settings file to reflect the db to use
-    db9@pooh:~$ cd projects/winnie
-    db9@pooh:~$ vim winnie/settings.py
+-   db9@pooh:~$ cd projects/winnie
+-   db9@pooh:~$ vim winnie/settings.py
     # The line that goes 'DATABASE = "mysql://..." needs changed
     # If you aren't using a standard path, then change 'PATH = "..."'
