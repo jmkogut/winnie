@@ -30,6 +30,7 @@ class Processor(threading.Thread):
     def __init__(self, communicator):
         self.com = communicator
         self.running = True
+        logger.info("Starting processor.")
 
         threading.Thread.__init__(self)
 
@@ -224,6 +225,21 @@ class Handler(object):
         intel = model.intelligence.select().orderBy('lastused').reversed()[0]
 
         return "Last used intel was %s" % intel.id
+
+    @handler
+    def delete_handler(self, _connection, event):
+        """
+        Deletes the last or the specified intel
+        """
+        key = event.message.split(' ')[1] if len(event.message.split(' ')) > 1 else \
+              model.intelligence.select().orderBy('lastused').reversed()[0].id
+        
+        intel = model.intelligence.get(int(key))
+        source, lastused = intel.source, intel.lastused
+        model.intelligence.delete(int(key))
+
+        return "Deleted intel %s. (source %s / lastused %s)" % (key, source, lastused)
+
 
     @handler
     def show_handler(self, _connection, event):
@@ -422,7 +438,7 @@ class Handler(object):
         else:
             email, password = message[1:]
 
-            query = account.selectBy(email=email)
+            query = model.account.selectBy(email=email)
             if query.count() == 0:
                 return "No user registered as %s" % email
             else:

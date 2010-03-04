@@ -93,7 +93,9 @@ class Connection(object, SingleServerIRCBot):
         sets channel list and modes.
         """
 
-        self.nick, address = settings.IRC
+        self.nicks, address = settings.IRC
+        self.nick = self.nicks[0]
+
         SingleServerIRCBot.__init__(self, [address], self.nick, self.nick)
     
         self.c = Client(self.nick)
@@ -137,12 +139,15 @@ class Connection(object, SingleServerIRCBot):
         """
         Initial server welcome message, join all channels
         """
+        logger.info("Received welcome.")
+
         to_join = self.c.to_join or []
+        logger.info("Joining %s channels"%len(to_join))
+
         while len(to_join) > 0:
             chan = to_join.pop()
             if chan not in (None, '', self.nick):
                 self.join(chan)
-
         self.processor.start()
     
     def queuemsg(self, event, target, phrase):
@@ -201,7 +206,7 @@ class Connection(object, SingleServerIRCBot):
     def log(self, thing, urgency='sys'):
         """
         Pretty format log messages
-        TODO: refactor it out that's what the fucking logger class if for
+        TODO: refactor it out that's what the fucking logger class is for
         """
         t = type(thing)
 
@@ -250,6 +255,8 @@ class Connection(object, SingleServerIRCBot):
         """
         Join in on a channel
         """
+        logger.info("Attempting to join %s"%channel)
+
         if channel not in [chan for chan in self.channels]:
             logger.add("channel %s" % channel)
             self.connection.join(channel)

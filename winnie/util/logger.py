@@ -28,7 +28,7 @@ class Logger:
 
 
     @action('++')
-    def learned(intel): return 'Learned: %s' % item.__repr__()
+    def learned(intel): return 'Learned: %s' % intel.__repr__()
 
     @action('++')
     def add(item): return 'Adding %s' % item

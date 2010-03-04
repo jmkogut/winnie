@@ -3,19 +3,20 @@ TYPING_SPEED = 750 # Mine is ~550, 750 is exceedingly high
 
 # Verbosity, the percentage of the time that winnie will 
 # look for something to say in response.
-VERBOSITY = 90
+VERBOSITY = 15
 
 # LOGSIZE
 LOGSIZE = 50
 
 # IRC settings
 IRC = (
-    'winniepooh',                   # nick
+    # nick first, any alt names after that (also things that people can call her)
+    ('winniepooh','winnie','winniep','thepooh','winnibear','pooh'),
     ('irc.freenode.net', 6667)    # server
 )
 
 IRC_CHANNELS = (
-    '#'+IRC[0],                     # join the channel with our nickname
+    '#'+IRC[0][0],                     # join the channel with our nickname
     '#trees'
 )
 
