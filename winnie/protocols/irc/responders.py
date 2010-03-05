@@ -222,29 +222,36 @@ class Handler(object):
         """
         Prints the key of the last used intel
         """
-        intel = model.intelligence.select().orderBy('lastused').reversed()[0]
+        key = int(event.message.split(' ')[1]) if len(event.message.split(' ')) > 1 else 0
 
-        return "Last used intel was %s" % intel.id
+        intel = model.intelligence.select().orderBy('lastused').reversed()[key]
+
+        return "intel-by-last[%s].id was %s" % (key, intel.id)
 
     @handler
     def delete_handler(self, _connection, event):
         """
         Deletes the last or the specified intel
         """
-        key = event.message.split(' ')[1] if len(event.message.split(' ')) > 1 else \
+        key = event.message.split(' ')[1] if len(event.message.split(' ')) > 1 and \
+              event.message.split(' ')[1] != 'last' \
+         else \
               model.intelligence.select().orderBy('lastused').reversed()[0].id
-        
+        #Get intel
         intel = model.intelligence.get(int(key))
-        source, lastused = intel.source, intel.lastused
+        #Save key fields
+        source, lastused, message = intel.source, intel.lastused, intel.message
+        message = message if len(message) < 10 else message[0:11]+"..."
+        # Delete intel
         model.intelligence.delete(int(key))
-
-        return "Deleted intel %s. (source %s / lastused %s)" % (key, source, lastused)
+        #Notify user
+        return "Deleted intel %s. [%s] (source %s / lastused %s)" % (key, message, source, lastused)
 
 
     @handler
     def show_handler(self, _connection, event):
         """
-        Prints the key of the last used intel
+        Shows some basic stats
         """
         intel = model.intelligence.select().orderBy('lastused').reversed()[0]
 
@@ -473,7 +480,16 @@ class Handler(object):
         It rolls the dice and determines whether or not she
         should based on channel mode + randomness + verbosity.
         """
-        return True if random.choice(range(0,100)) < self.c.verbosity else False
+        speak = True if random.choice(range(0,100)) < self.c.verbosity else False
+
+        if speak:
+            logger.info("Rolled go for speaking!")
+        else:
+            print self.get_mode(channel)
+            if self.get_mode(channel) != 'shush':
+                logger.info("I lost roll speak T_T")
+        
+        return speak
 
     def get_usermask(self, mask):
         """
@@ -495,11 +511,12 @@ class Handler(object):
         scans text for things to learn or replies to formulate
         based on channel mode.
         """
-        print "Handling event :%s"%event.arguments()[0]
-
         event.user = self.get_usermask(event.source())
 
         try:
+#messagetype = self.determine_type(event)
+            
+#           if messagetype == 'action':
             if event.message.startswith(self.handler_prefix):
                 for handler in self.handlers.keys():
                     if event.arguments()[0].startswith(
@@ -533,15 +550,11 @@ class Handler(object):
         # We just learned something
         # SAVE IT!
         if self.should_save(event):
-            print "Saving that"
             self.save_intel(event)
 
         # Hold your tounge winnie
         if self.gets_to_speak(event):
-            print "Speaking that"
             self.speak_for(event)
-        else:
-            print "Didn't get to speak T_T"
     
     def should_save(self, event):
         return (len(event.keywords) > 3)
