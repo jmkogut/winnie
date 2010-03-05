@@ -17,7 +17,8 @@ IRC = (
 
 IRC_CHANNELS = (
     '#'+IRC[0][0],                     # join the channel with our nickname
-    '#trees'
+#    '#trees',
+    '#trees', '#reddit',
 )
 
 # The db connection string

@@ -3,6 +3,7 @@ from winnie import settings
 
 from winnie.protocols.irc.connection import Connection
 from winnie.protocols.irc.connection import ConnectionModel as cmodel
+from winnie.lexer import LexerModel as lmodel
 
 from framework.Controllers import Controller as standard
 from framework.Controllers import JSONController as json
@@ -23,6 +24,9 @@ def simple_api(request, entity=None, action=None, id=None):
 
         "channel": cmodel.channel,
         "server": cmodel.server,
+
+        "postags": lmodel.tag,
+        "lexer": lmodel.lexer
     }
     
     if entity not in allowed_entities: raise errors.web.InvalidRequest('Entity is not valid.')

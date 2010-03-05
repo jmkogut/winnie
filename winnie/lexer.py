@@ -1,7 +1,37 @@
 from nltk import word_tokenize, pos_tag
+from nltk.data import load
 
 from nltk.corpus import stopwords as sw
 stopwords = sw.words("english")
+
+from winnie.data import model
+
+class LexerModel:
+    """
+    Holds a few data classes for the lexer
+    """
+    class tag(model.WinnieList):
+        class model(model.WinnieObject):
+            def __init__(self, name, shortdesc, sample):
+                self.name = name
+                self.shortdesc = shortdesc
+                self.sample = sample
+            def ref(self):
+                return (self.name, self.shortdesc, self.sample)
+    
+        @classmethod
+        def select(cls):
+            tagset = 'unpenn_tagset'               
+            tagdict = load("help/tagsets/" + tagset + ".pickle") 
+            return [cls.model(name, tagdict[name][0], tagdict[name][1]) for name in tagdict]
+ 
+    class lexer(model.WinnieList):
+        class model(model.WinnieObject):
+            def __init__(self):
+                pass
+
+            def ref(self):
+                return 'lexer'
 
 class Lexer:
     '''

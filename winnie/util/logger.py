@@ -1,8 +1,10 @@
 from datetime import datetime
 
 from winnie.util.singletons import Singleton
+from winnie.util.color import Color
+color = Color()
 
-def action(sign=''):
+def action(sign='', color_name=None):
     '''
     Decorator to allow for
         
@@ -11,7 +13,8 @@ def action(sign=''):
     '''
     def wrap(f):
         def wrapped_f(instance, item):
-            instance.log( sign, f(item) )
+            prefix = color.code(color_name, sign) if color_name else sign
+            instance.log( prefix, f(item) )
         return wrapped_f
     return wrap
 
@@ -27,25 +30,25 @@ class Logger:
     __metaclass__ = Singleton
 
 
-    @action('++')
+    @action('++', 'green')
     def learned(intel): return 'Learned: %s' % intel.__repr__()
 
-    @action('++')
+    @action('++', 'green')
     def add(item): return 'Adding %s' % item
 
-    @action('--')
+    @action('--', 'red')
     def rem(item): return 'Removing %s' % item
 
-    @action('<-')
+    @action('<-', 'blue')
     def incoming(item): return item
 
-    @action('->')
+    @action('->', 'blue')
     def outgoing(item): return item
     
-    @action('!!')
+    @action('!!', 'magenta')
     def notice(item): return item
 
-    @action('**')
+    @action('**', 'yellow')
     def info(item): return item
 
     def log(self, sign, message, time=datetime.now()):
@@ -56,8 +59,8 @@ class Logger:
         timeformat = "%H:%M %S"   
 
         if 'strftime' in dir(time):
-            out = " %s [%s] %s" % (sign, time.strftime(timeformat), message)
+            out = " %s [%s] %s" % (sign, color.code('blue', time.strftime(timeformat)), message)
         else:
-            out = " %s [%s] %s" % (sign, time, message)
+            out = " %s [%s] %s" % (sign, color.code('blue', time), message)
 
         print out

@@ -4,6 +4,7 @@ Contains the processes in charge of responding to input
 
 from winnie import settings
 from winnie.data import model
+from winnie.util.decorators import type_delay
 
 from winnie.util.logger import Logger
 logger = Logger()
@@ -162,11 +163,11 @@ class Handler(object):
         self.default_mode = 'mimic'
 
         self.modes['shush'] = lambda _: None
-        self.modes['mimic'] = lambda event: self.search(event.keywords, limit=1).use()
+        self.modes['mimic'] = type_delay(lambda event: self.search(event.keywords, limit=1).use())
 
         self.markov_table = {}
-        self.modes['markov-fresh'] = lambda event: self.markov_from(event.arguments()[0], None)
-        self.modes['markov-cumulative'] = lambda event: self.markov_from(event.arguments()[0], self.markov_table)
+        self.modes['markov-fresh'] = type_delay(lambda event: self.markov_from(event.arguments()[0], None))
+        self.modes['markov-cumulative'] = type_delay(lambda event: self.markov_from(event.arguments()[0], self.markov_table))
         # }
 
     
@@ -241,12 +242,29 @@ class Handler(object):
         intel = model.intelligence.get(int(key))
         #Save key fields
         source, lastused, message = intel.source, intel.lastused, intel.message
-        message = message if len(message) < 10 else message[0:11]+"..."
+        message = message if len(message) < 20 else message[0:20]+"..."
         # Delete intel
         model.intelligence.delete(int(key))
         #Notify user
         return "Deleted intel %s. [%s] (source %s / lastused %s)" % (key, message, source, lastused)
 
+    @handler
+    def intel_handler(self, _connection, event):
+        """
+        Shows the last or the specified intel
+        """
+        key = event.message.split(' ')[1] if len(event.message.split(' ')) > 1 and \
+              event.message.split(' ')[1] != 'last' \
+         else \
+              model.intelligence.select().orderBy('lastused').reversed()[0].id
+        #Get intel
+        intel = model.intelligence.get(int(key))
+        #Save key fields
+        source, lastused, message = intel.source, intel.lastused, intel.message
+        message = message if len(message) < 20 else message[0:20]+"..."
+
+        #Notify user
+        return "Intel %s. [%s] (source %s / lastused %s)" % (key, message, source, lastused)
 
     @handler
     def show_handler(self, _connection, event):
@@ -342,7 +360,7 @@ class Handler(object):
     @handler
     def get_handler(self, _connection, event):
         """
-        Retrieves a memcached value
+        Retrieves a cache value
         """
         message = event.arguments()[0].split(' ')
 
@@ -468,7 +486,7 @@ class Handler(object):
         if len(message) is not 1:
             return "Usage is %strace" % self.handler_prefix
         else:
-            from ipdb import set_trace; set_trace()
+            from pudb import set_trace; set_trace()
 
             return "done with trace"
 
@@ -485,7 +503,6 @@ class Handler(object):
         if speak:
             logger.info("Rolled go for speaking!")
         else:
-            print self.get_mode(channel)
             if self.get_mode(channel) != 'shush':
                 logger.info("I lost roll speak T_T")
         
@@ -497,10 +514,8 @@ class Handler(object):
         """
         query = model.account_mask.selectBy(mask=mask)
 
-        if query.count() > 0:
-            return query.getOne()
-        else:
-            return model.account_mask(mask=mask, accountID=None)
+        return query.getOne() if query.count() > 0 else \
+               model.account_mask(mask=mask, accountID=None)
     
     def determine_type(self, event):
         pass
@@ -597,7 +612,6 @@ class Handler(object):
             #print "[%s]"%query
             intel = self.search(query.split(" "), limit=0, not_within=0)
             if not intel or 'msg' in intel[0].__dict__:
-                print "NOT GUNNA PRINT FAKE INTEL! %s"%intel[0].msg
                 return
 
             results = [i.message for i in intel]
