@@ -156,7 +156,7 @@ class Handler(object):
         self.handler_prefix = settings.HANDLER_PREFIX
         self.handlers = {}
         self.find_handlers()
-        
+
         # TODO: fix what these call to return None if nothing {
         self.modes = {}
         self.default_mode = 'mimic'
@@ -501,6 +501,9 @@ class Handler(object):
             return query.getOne()
         else:
             return model.account_mask(mask=mask, accountID=None)
+    
+    def determine_type(self, event):
+        pass
 
     def handle(self, connection, event):
         """
@@ -514,9 +517,11 @@ class Handler(object):
         event.user = self.get_usermask(event.source())
 
         try:
-#messagetype = self.determine_type(event)
+            messagetype = self.determine_type(event)
             
-#           if messagetype == 'action':
+            if messagetype == 'action':
+                pass
+            
             if event.message.startswith(self.handler_prefix):
                 for handler in self.handlers.keys():
                     if event.arguments()[0].startswith(
@@ -671,11 +676,7 @@ class Handler(object):
     def save_intel(self, event):
         """
         Saves intel to the db from an event
-        TODO: remove last two arguments
         """
-        # TODO: remove
-        #from ipdb import set_trace; set_trace()
-
         intel = model.intelligence(
             source = event.source(),
             target = event.target(),
