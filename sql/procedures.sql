@@ -11,13 +11,17 @@ BEGIN
     SELECT
         id, 
         MATCH (keywords) AGAINST (query) AS score,
-        lastused
+        lastused,
+        created
     FROM intelligence
     WHERE (
         MATCH (keywords) AGAINST (query) > 0 
 
         AND (
-            lastused IS NULL
+            (
+                lastused IS NULL AND
+                timestampdiff(MINUTE , created, NOW()) > 60 -- No repeats in 60 minutes
+            )
             OR timestampdiff(MINUTE , lastused, NOW()) > minutes_since
         )   
     )   
