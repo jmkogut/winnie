@@ -308,13 +308,13 @@ class Handler(object):
         if type(modes) is not DictType:
             modes = {}
         
-        if mode in self.modes:
+        if mode in self.modes and channel in [c for c in self.com.channels]:
             modes[channel] = mode
             self.c.modes = modes
             # TODO: don't say this here
             return "Going into %s mode" % mode
         else:
-            return "%s is not a valid mode" % mode
+            return "%s is not a valid mode or %s is not a valid channel" % mode, channel
 
     @handler(require='trust')
     def reload_handler(self, _connection, _event):
@@ -519,6 +519,11 @@ class Handler(object):
     
     def determine_type(self, event):
         pass
+    
+    def reset_modes(self):
+        self.c.modes = {}
+        for channel in self.com.channels:
+            self.set_mode(channel, self.default_mode)
 
     def handle(self, connection, event):
         """
