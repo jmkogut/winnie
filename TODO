@@ -4,3 +4,4 @@
  * Negging/possing (+++ or 'wtf' winnie)
  * Convert to twisted IRC + NLTK
  * Keep a frequency/business rating for channels
+ * Fix user trust to reload dynamically
