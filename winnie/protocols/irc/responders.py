@@ -543,11 +543,13 @@ class Handler(object):
                 pass
             
             if event.message.startswith(self.handler_prefix):
-                for handler in self.handlers.keys():
-                    if event.arguments()[0].startswith(
-                            "%s%s" % (self.handler_prefix,handler)):
-                        self.handlers[handler](connection, event)
-                        return None
+                # Courtesy of notabel, unambiguous commands
+                cmd = event.arguments()[0][len(self.handler_prefix):]
+                matches = filter(lambda k: k.startswith(cmd), self.handlers.keys())
+                if len(matches) == 1:
+                    self.handlers[matches[0]](connection, event)
+                    return None
+
             else:
                 self.analyze(connection, event)
 
