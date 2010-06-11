@@ -5,6 +5,6 @@
  * Convert to twisted IRC + NLTK
  * Keep a frequency/business rating for channels
  * Fix user trust to reload dynamically
- * Respond to direct inquiries
+ * Done - Respond to direct inquiries
  * Make winnie spend a certain amount of the time 'away'
  * Channel inactivity should trigger /away or a provoking statement
