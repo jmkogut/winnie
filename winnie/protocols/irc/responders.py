@@ -498,7 +498,11 @@ class Handler(object):
         It rolls the dice and determines whether or not she
         should based on channel mode + randomness + verbosity.
         """
-        speak = True if random.choice(range(0,100)) < self.c.verbosity else False
+        if (channel.hilighted):
+            speak = True if random.choice(range(0,100)) < self.c.verbosity*10 else False
+            logger.info("I WAS HILIGHTED! %s" % ("Speaking" if speak else "cba to talk right now"))
+        else:
+            speak = True if random.choice(range(0,100)) < self.c.verbosity else False
 
         if speak:
             logger.info("Rolled go for speaking!")
@@ -535,6 +539,7 @@ class Handler(object):
             messagetype = self.determine_type(event)
             
             if messagetype == 'action':
+                # TODO: record actions to replay later
                 pass
             
             if event.message.startswith(self.handler_prefix):
@@ -566,16 +571,28 @@ class Handler(object):
         l = Lexer(event.message)
         event.keywords = l.keywords
 
+        # Event stats
+        event.hilighted = self.was_hilighted(event)
+
+
+        # Hold your tounge winnie
+        if self.gets_to_speak(event):
+            self.speak_for(event)
+ 
+
         # If this intelligence doesn't exist already
         # We just learned something
         # SAVE IT!
         if self.should_save(event):
             self.save_intel(event)
+  
+    def was_hilighted(self, event):
+        for name in settings.IRC[0]:
+            if name in event.message:
+                event.hilighted_word = name
+                return True
+        return False
 
-        # Hold your tounge winnie
-        if self.gets_to_speak(event):
-            self.speak_for(event)
-    
     def should_save(self, event):
         return (len(event.keywords) > 3)
 
@@ -595,6 +612,13 @@ class Handler(object):
         # TODO: some badass shit for return self.modes[self.mode](event) if len(self.modes) > 0 else None
         if len(self.modes) == 0:
             return # No  modes!
+        
+        if event.hilighted:
+            event.keywords = list(event.keywords)
+            event.keywords.remove(event.hilighted_word)
+
+            event.message = event.message.replace(event.hilighted_word, "")
+            logger.info("EVENT STRIPPED OF MY NAAAAME")
 
         response = None if len(self.modes) == 0 else self.modes[self.get_mode(event.target())](event)
         

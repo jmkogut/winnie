@@ -11,21 +11,22 @@ LOGSIZE = 50
 # IRC settings
 IRC = (
     # nick first, any alt names after that (also things that people can call her)
-    ('winniepooh','winnie','winniep','thepooh','winnibear','pooh'),
+    ('winniepooh','winnie','poohbear','thepooh','bear','pooh'),
     ('irc.freenode.net', 6667)    # server
 )
 
 IRC_CHANNELS = (
     '#'+IRC[0][0],                     # join the channel with our nickname
 #    '#trees',
-    '#trees', '#reddit',
+    '#trees',
+    '#weedit'
 )
 
 # The db connection string
-DATABASE = "mysql://doobie:doobienine@localhost/winnie"
+DATABASE = "mysql://localhost/winnie"
 
 # Handler Prefix (for commands %channels, %help, etc)
-HANDLER_PREFIX = '%'
+HANDLER_PREFIX = ':'
 
 # HTTP Address
 HTTP_ADDRESS = {
