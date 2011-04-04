@@ -12,19 +12,7 @@ from winnie.web import server as HTTP
 
 def main():
     try:
-
-        #from pympler.muppy import tracker
-        #memory_tracker = tracker.SummaryTracker()
-
-        # Start these processes
         irc = IRC.Connection()
-                
-        #irc.memory_tracker = memory_tracker
-
-        #http = HTTP.Server()
-        #http.communicator = irc
-        #http.start()
-
         irc.start()
 
     except KeyboardInterrupt, e:

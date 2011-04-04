@@ -33,6 +33,9 @@ class LexerModel:
             def ref(self):
                 return 'lexer'
 
+from winnie.util.logger import Logger
+logger = Logger()
+
 class Lexer:
     '''
     This is pretty hardcore on the server
@@ -44,7 +47,7 @@ class Lexer:
         self.keywords = filter(lambda x: x not in stopwords, self.tokens)
 
     def tokenize(self, text):
-        return [self.strip(word) for word in text.lower().split(' ') if word != '']
+        return [self.strip(word) for word in text.lower().split(' ') if self.strip(word) != '']
 
     def strip(self, word):
         return "".join([c for c in word if ord(c) in range(ord('a'), ord('z'))])

@@ -1,4 +1,5 @@
-from winnie.util.logger import *
+from winnie.util.logger import Logger
+logger=Logger()
 from winnie.data import model
 from winnie.lexer import Lexer
 
@@ -10,16 +11,19 @@ import os
 
 def create_keywords(max=50):
     to_index = model.intelligence.selectBy(keywords='')
+    lazy = to_index.lazyIter()
 
-    debug("Found %s records to index. (Max: %s)"%(to_index.count(),max))
-    debug("Indexing...")
+    logger.info("Found %s records to index. (Max: %s)"%(to_index.count(),max))
+    logger.info("Indexing...")
 
     i = 0
     while i is not False:
-        intel = to_index[i]
-        debug("Indexing %s"%intel.id)
-        #intel.keywords = lexer(intel.original).keywords
+        intel = lazy.next()
+#logger.info("Indexing %s"%intel.id)
+        intel.keywords = ", ".join(Lexer(intel.message).keywords)
         i = i + 1 if i is not max else False
+    
+    logger.info("Done indexing %s records"%max)
 
 def import_irc_log(filename=None, target=None, max=-1, threshold=4):
     """
