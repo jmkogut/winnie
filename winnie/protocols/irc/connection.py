@@ -22,7 +22,7 @@ from irclib import nm_to_n
 from types import TupleType
 
 from datetime import datetime
-import md5
+import hashlib
 import Queue
 
 def event_to_dict(event):
@@ -232,9 +232,8 @@ class Connection(object, SingleServerIRCBot):
         Send events off to the responders
         """
         event.timestamp = datetime.now()
-        event.ref = md5.new(event.timestamp.isoformat()).hexdigest()[0:5]
+        event.ref = hashlib.md5(event.timestamp.isoformat()).hexdigest()[0:5]
         event.message = event.arguments()[0].strip()
-
         self.add_history(event)
         self.log(event)
 

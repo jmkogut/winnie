@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.5
+#!/usr/bin/env python2.6
 
 """
 The primary startup script for winnie. Initializes
@@ -6,7 +6,7 @@ the IRC connection
 """
 
 from winnie.protocols.irc import connection as IRC
-from winnie.web import server as HTTP
+#from winnie.web import server as HTTP
 
 
 

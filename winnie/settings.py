@@ -17,13 +17,13 @@ IRC = (
 
 IRC_CHANNELS = (
     '#'+IRC[0][0],                     # join the channel with our nickname
+    '#r.trees',
 #    '#trees',
-    '#trees',
-    '#weedit'
+#    '#weedit'
 )
 
 # The db connection string
-DATABASE = "mysql://localhost/winnie"
+DATABASE = "mysql://winnie:lolhax@localhost/winnie"
 
 # Handler Prefix (for commands %channels, %help, etc)
 HANDLER_PREFIX = ':'

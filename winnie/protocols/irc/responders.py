@@ -11,7 +11,7 @@ logger = Logger()
 
 from winnie.lexer import Lexer
 
-import md5
+import hashlib
 import time
 import random
 import threading
@@ -119,6 +119,8 @@ def handler(*args, **kwargs):
                 event.target(),
                 "$who: "+resp.strip()
             )
+        else:
+            logger.info("GOT A BLANK RESPONSE")
 
     wrapper.__setattr__('is_handler', True)
 
@@ -197,18 +199,21 @@ class Handler(object):
         Interact with the channel list, options are ['list', 'join', 'part']
         """
         message = event.arguments()[0].split(' ')
-
+        logger.info(message)
         if len(message) > 1:
             command = message[1]
         else:
             command = 'list'
 
+        logger.info(command)
 
         if command == 'list':
             return "%s" % [channel for channel in self.com.channels]
 
         elif command in ('join', 'enter'):
+            print 'command in join/enter'
             if len(message) > 2:
+                print 'joining %s' % message[2]
                 self.com.join(message[2])
             else:
                 return "I need a channel name."
@@ -271,7 +276,7 @@ class Handler(object):
         """
         Shows some basic stats
         """
-        intel = model.intelligence.select().orderBy('lastused').reversed()[0]
+        #intel = model.intelligence.select().orderBy('lastused').reversed()
 
         return "In %s, using %s mode, and verbosity is %s." % (event.target(), self.get_mode(event.target()), self.c.verbosity)
 
@@ -293,12 +298,12 @@ class Handler(object):
         """
         Retrieves the mode for this channel.
         """
-        modes = self.c.modes
-        if type(modes) != DictType or channel not in modes:
-            self.set_mode(channel, self.default_mode)
-            modes = self.c.modes
-        
-        return modes[channel]
+
+        #if type(self.c.modes) != DictType or channel not in self.c.modes:
+        #    self.set_mode(channel, self.default_mode)
+        #print self.c.modes
+        #return self.c.modes[channel]
+        return 'mimic'
    
     def set_mode(self, channel, mode):
         """
@@ -314,7 +319,8 @@ class Handler(object):
             # TODO: don't say this here
             return "Going into %s mode" % mode
         else:
-            return "%s is not a valid mode or %s is not a valid channel" % mode, channel
+            return "%s is not a valid mode or %s is not a valid channel" % (mode, channel)
+
 
     @handler(require='trust')
     def reload_handler(self, _connection, _event):
@@ -372,6 +378,20 @@ class Handler(object):
                 return "%s is %s." % (message[1], value)
             else:
                 return "I dunno."
+
+    @handler(require='trust')
+    def join_handler(self, _connection, event):
+        """
+        joins a chan
+        """
+        logger.info("YOU ARE JOINING")
+        message = event.arguments()[0].split(' ', 2)
+
+        if len(message) is not 2:
+            return "Usage is %sjoin [chan]." % self.handler_prefix
+        else:
+            self.com.join(message[1])
+
 
     @handler
     def whoami_handler(self, _connection, event):
@@ -435,16 +455,18 @@ class Handler(object):
     
     @handler
     def register_handler(self, connection, event):
+        logger("Now registering")
         message = event.arguments()[0].split(' ') # register [email] [password]
 
         if len(message) is not 3:
             return "Usage is %sregister email password" % self.handler_prefix
         else:
             email, password = message[1:]
+            self.logger("Registering %s:%s"%(email,password))
             
             query = model.account.selectBy(email=email)
             if query.count() == 0:
-                a = model.account(email=email, password=md5.md5(password).hexdigest())
+                a = model.account(email=email, password=hashlib.md5(password).hexdigest())
                 event.user.account = a
                 return "account created, identified as %s" % email
             else:
@@ -539,7 +561,6 @@ class Handler(object):
         based on channel mode.
         """
         event.user = self.get_usermask(event.source())
-
         try:
             messagetype = self.determine_type(event)
             
@@ -550,10 +571,14 @@ class Handler(object):
             if event.message.startswith(self.handler_prefix):
                 # Courtesy of notabel, unambiguous commands
                 cmd = event.arguments()[0][len(self.handler_prefix):]
-                matches = filter(lambda k: k.startswith(cmd), self.handlers.keys())
+                matches = filter(lambda k: cmd.startswith(k), self.handlers.keys())
+                logger.info("handler keys = %s"%self.handlers.keys())
+                logger.info("command %s matches %s"%(cmd,matches))
                 if len(matches) == 1:
                     self.handlers[matches[0]](connection, event)
                     return None
+                else:
+                    logger.info("Shit creek, no matches.")
 
             else:
                 self.analyze(connection, event)
@@ -723,10 +748,11 @@ class Handler(object):
         Saves intel to the db from an event
         """
         intel = model.intelligence(
-            source = event.source(),
+            mask = event.source(),
             target = event.target(),
             keywords = " ".join(event.keywords),
-            message = event.arguments()[0],
+            keyphrase = event.arguments()[0],
+            indicator = "none",
             created=event.timestamp
         )
 

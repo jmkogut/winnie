@@ -228,3 +228,5 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+ ALTER TABLE intelligence ADD FULLTEXT(keywords);
