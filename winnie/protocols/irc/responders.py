@@ -4,7 +4,7 @@ Contains the processes in charge of responding to input
 
 from winnie import settings
 from winnie.data import model
-from winnie.util.decorators import type_delay
+from winnie.util.decorators import simple_thread
 
 from winnie.util.logger import Logger
 logger = Logger()
@@ -20,6 +20,8 @@ import traceback
 from types import DictType
 from irclib import nm_to_n
 from datetime import datetime
+
+import re
 
 class Processor(threading.Thread):
     """
@@ -56,11 +58,10 @@ class Processor(threading.Thread):
             # Unpack this message, calculate delay, pause for appropriate
             # time
             (target, phrase) = self.com.output.get()
-            
-            # TODO: enable delay for certain things
-            
-            # Send off the message
-            self.com.privmsg(target, phrase)
+           
+            delay = (len(tuple(phrase))*1.0 / settings.TYPING_SPEED*1.0) * 60
+            delay_send = simple_thread(lambda com,tar,phr,delay: time.sleep(delay) or com.privmsg(tar, phr))
+            delay_send(self.com, target, phrase, delay)
 
 def handler(*args, **kwargs):
     """
@@ -114,10 +115,10 @@ def handler(*args, **kwargs):
             resp = "You are not allowed access"
 
         if resp is not None:
-            self.com.queuemsg(
-                event,
+            self.com.privmsg(
+               # event,
                 event.target(),
-                "$who: "+resp.strip()
+                "%s: %s"% (params[0], resp.strip())
             )
         else:
             logger.info("GOT A BLANK RESPONSE")
@@ -162,14 +163,14 @@ class Handler(object):
 
         # TODO: fix what these call to return None if nothing {
         self.modes = {}
-        self.default_mode = 'mimic'
+        self.default_mode = 'shush'
 
         self.modes['shush'] = lambda _: None
-        self.modes['mimic'] = type_delay(lambda event: self.search(event.keywords, limit=1).use())
-
+        self.modes['mimic'] = lambda event: self.search(event.keywords, limit=1).use()
+        self.modes['laugh'] = lambda _: None
         self.markov_table = {}
-        self.modes['markov-fresh'] = type_delay(lambda event: self.markov_from(event.arguments()[0], None))
-        self.modes['markov-cumulative'] = type_delay(lambda event: self.markov_from(event.arguments()[0], self.markov_table))
+        self.modes['markov'] = lambda event: self.markov_from(event.arguments()[0], None)
+# STUPID        self.modes['markov-cumulative'] = type_delay(lambda event: self.markov_from(event.arguments()[0], self.markov_table))
         # }
 
     
@@ -267,9 +268,10 @@ class Handler(object):
         #Save key fields
         source, lastused, message = intel.source, intel.lastused, intel.message
         message = message if len(message) < 20 else message[0:20]+"..."
+        chan = intel.target
 
         #Notify user
-        return "Intel %s. [%s] (source %s / lastused %s)" % (key, message, source, lastused)
+        return "Intel %s. [%s] {%s} (source %s / lastused %s)" % (key, message, chan, source, lastused)
 
     @handler
     def show_handler(self, _connection, event):
@@ -299,11 +301,14 @@ class Handler(object):
         Retrieves the mode for this channel.
         """
 
-        #if type(self.c.modes) != DictType or channel not in self.c.modes:
-        #    self.set_mode(channel, self.default_mode)
-        #print self.c.modes
-        #return self.c.modes[channel]
-        return 'mimic'
+        if type(self.c.modes) != DictType or channel not in self.c.modes:
+            self.set_mode(channel, self.default_mode)
+        
+
+        if channel in self.c.modes.keys():
+            return self.c.modes[channel]
+        else: return self.default_mode
+
    
     def set_mode(self, channel, mode):
         """
@@ -316,8 +321,8 @@ class Handler(object):
         if mode in self.modes and channel in [c for c in self.com.channels]:
             modes[channel] = mode
             self.c.modes = modes
-            # TODO: don't say this here
             return "Going into %s mode" % mode
+            print self.c.modes
         else:
             return "%s is not a valid mode or %s is not a valid channel" % (mode, channel)
 
@@ -455,14 +460,14 @@ class Handler(object):
     
     @handler
     def register_handler(self, connection, event):
-        logger("Now registering")
+        logger.info("Now registering")
         message = event.arguments()[0].split(' ') # register [email] [password]
 
         if len(message) is not 3:
             return "Usage is %sregister email password" % self.handler_prefix
         else:
             email, password = message[1:]
-            self.logger("Registering %s:%s"%(email,password))
+            logger.info("Registering %s:%s"%(email,password))
             
             query = model.account.selectBy(email=email)
             if query.count() == 0:
@@ -475,6 +480,22 @@ class Handler(object):
             user.trusted = 1
 
             return "%s is now trusted" % nm_to_n(to_trust)
+
+    @handler
+    def karma_handler(self, connection, event):
+        message = event.arguments()[0].split(' ') # karma [term]
+
+        if len(message) is not 2:
+            return "Usage is %skarma %s (for yourself)" % (self.handler_prefix, nm_to_n(event.source()))
+        else:
+            term = message[1]
+
+            query = model.karma.selectBy(term=term)
+            if query.count() == 0:
+                return "%s has 0 karma" % term
+            else:
+                a = query.getOne()
+                return "%s has %s karma" % (a.term, a.karma)
 
     @handler
     def identify_handler(self, connection, event):
@@ -491,7 +512,7 @@ class Handler(object):
             else:
                 a = query.getOne()
 
-                if md5.md5(password).hexdigest() == a.password:
+                if hashlib.md5(password).hexdigest() == a.password:
                     event.user.account = a
                     
                     return "identified as %s" % event.user.account.email
@@ -521,7 +542,7 @@ class Handler(object):
         should based on channel mode + randomness + verbosity.
         """
         if (channel.hilighted):
-            speak = True if random.choice(range(0,100)) < self.c.verbosity*10 else False
+            speak = True if random.choice(range(0,100)) < self.c.verbosity*1.3 else False
             logger.info("I WAS HILIGHTED! %s" % ("Speaking" if speak else "cba to talk right now"))
         else:
             speak = True if random.choice(range(0,100)) < self.c.verbosity else False
@@ -529,7 +550,7 @@ class Handler(object):
         if speak:
             logger.info("Rolled go for speaking!")
         else:
-            if self.get_mode(channel) != 'shush':
+            if self.get_mode(channel.target()) != 'shush':
                 logger.info("I lost roll speak T_T")
         
         return speak
@@ -572,8 +593,8 @@ class Handler(object):
                 # Courtesy of notabel, unambiguous commands
                 cmd = event.arguments()[0][len(self.handler_prefix):]
                 matches = filter(lambda k: cmd.startswith(k), self.handlers.keys())
-                logger.info("handler keys = %s"%self.handlers.keys())
-                logger.info("command %s matches %s"%(cmd,matches))
+#                logger.info("handler keys = %s"%self.handlers.keys())
+#                logger.info("command %s matches %s"%(cmd,matches))
                 if len(matches) == 1:
                     self.handlers[matches[0]](connection, event)
                     return None
@@ -605,7 +626,9 @@ class Handler(object):
 
         # Event stats
         event.hilighted = self.was_hilighted(event)
-
+    
+        # karma voting?
+        self.extract_karma(event)
 
         # Hold your tounge winnie
         if self.gets_to_speak(event):
@@ -626,6 +649,7 @@ class Handler(object):
         return False
 
     def should_save(self, event):
+        logger.info('%s keywords'%len(event.keywords))
         return (len(event.keywords) > 3)
 
     def search(self, query, limit=1, not_within=60):
@@ -635,6 +659,30 @@ class Handler(object):
         argument (in minutes).
         """
         return model.search_intelligence(query, limit, not_within)
+
+
+    def extract_karma(self, event):
+        """
+        Pulls out karma votes!
+        """
+        act = lambda op,sc: (op=='--' and (sc-1)) or (op=='++' and (sc+1))
+        if '++' in event.message or '--' in event.message:
+            reg = "((?P<term>[a-zA-Z0-9\\.\\-_]+)(: )?(?P<operand>[+\\-]{2}))"
+            m = re.findall(reg, event.message)
+            karmas = zip([i[1] for i in m],[i[3] for i in m])
+
+            for karma in karmas:
+                query = model.karma.selectBy(term=karma[0])
+                if query.count() == 0:
+                    k = model.karma(
+                        term = karma[0],
+                        karma = act(karma[1],0)
+                    )
+                else:
+                    k = query.getOne()
+                    k.karma = act(karma[1],k.karma)
+                    
+                
 
     def speak_for(self, event):
         """
@@ -652,9 +700,16 @@ class Handler(object):
             event.message = event.message.replace(event.hilighted_word, "")
             logger.info("EVENT STRIPPED OF MY NAAAAME")
 
-        response = None if len(self.modes) == 0 else self.modes[self.get_mode(event.target())](event)
-        
+        # calls self.mode[current_mode](event, con)
+        # self.com.queuemsg( event, event.target(), )
+        target = event.target()
+        mode = self.get_mode(target)
+        response = self.modes[mode](event) 
+
+        print "target %s mode %s response %s" % (target, mode, response)
+
         self.com.queuemsg(event, event.target(), response)
+        
 
     def markov_from(self, query, table=None):
         """
@@ -748,11 +803,10 @@ class Handler(object):
         Saves intel to the db from an event
         """
         intel = model.intelligence(
-            mask = event.source(),
+            source = event.source(),
             target = event.target(),
             keywords = " ".join(event.keywords),
-            keyphrase = event.arguments()[0],
-            indicator = "none",
+            message = event.arguments()[0],
             created=event.timestamp
         )
 

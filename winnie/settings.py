@@ -17,11 +17,15 @@ IRC = (
 
 IRC_CHANNELS = (
     '#'+IRC[0][0],                     # join the channel with our nickname
-    '#r.trees',
+#    '#r.trees',
 #    '#trees',
 #    '#weedit'
 )
-
+IRC_CREDENTIALS = {
+    'authority':'nickserv',
+    'command':'identify %s %s',
+    'creds': ('dottru@gmail.com', 'gottolovethe1')
+}
 # The db connection string
 DATABASE = "mysql://winnie:lolhax@localhost/winnie"
 

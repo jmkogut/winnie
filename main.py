@@ -6,9 +6,7 @@ the IRC connection
 """
 
 from winnie.protocols.irc import connection as IRC
-#from winnie.web import server as HTTP
-
-
+from winnie.web import server as HTTP
 
 def main():
     try:

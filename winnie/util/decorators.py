@@ -3,6 +3,9 @@ from winnie import settings
 from winnie.util.logger import Logger
 logger = Logger()
 
+import threading
+from functools import wraps
+
 def monkeypatch(cls):
     '''
     To use:
@@ -45,22 +48,16 @@ def log(method):
 
     return wrapper
 
-def type_delay(method):
+def simple_thread(method):
     """
-    Decorator: Will sleep a bit before returning based on length and typing
-    speed
+    Executes a method in another thread for to not block
     """
+    @wraps(method)
     def wrapper(*args):
         # Wrap the original func
-        phrase = method(*args)
-        
-        if phrase:
-            # Time delay
-            delay = (len(tuple(phrase))*1.0 / settings.TYPING_SPEED*1.0) * 60
-            logger.info("Delay of %s seconds"%delay)
-            time.sleep( delay )
-
-        return phrase
+        method_hl = threading.Thread(target=method, args=args)
+        method_hl.start()
+        return method_hl
 
     return wrapper
 

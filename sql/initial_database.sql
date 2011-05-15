@@ -19,12 +19,21 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- Database: `factoids`
 --
 
+-- KARMA TABLE
+DROP TABLE IF EXISTS `karma`;
+CREATE TABLE IF NOT EXISTS `karma` (
+  `id` int(11) NOT NULL auto_increment,
+  `term` varchar(30) NOT NULL,
+  `karma` tinyint(1) NOT NULL default '0',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
+
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `account`
 --
-
 DROP TABLE IF EXISTS `account`;
 CREATE TABLE IF NOT EXISTS `account` (
   `id` int(11) NOT NULL auto_increment,
@@ -36,6 +45,7 @@ CREATE TABLE IF NOT EXISTS `account` (
   `can_delete` tinyint(1) NOT NULL default '1',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
 
 --
 -- Dumping data for table `account`
@@ -213,11 +223,11 @@ CREATE DEFINER=`db9`@`localhost` PROCEDURE `search_intelligence`(
 BEGIN
     SELECT
         id,
-        MATCH (keyphrase, value) AGAINST (query) AS score,
+        MATCH (message) AGAINST (query) AS score,
         lastused
     FROM intelligence
     WHERE (
-        MATCH (keyphrase, value) AGAINST (query) > 0
+        MATCH (message) AGAINST (query) > 0
     
         AND (
             lastused IS NULL

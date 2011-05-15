@@ -107,6 +107,7 @@ class Connection(object, SingleServerIRCBot):
         self._history = {}
 
         self.c.to_join = [c for c in settings.IRC_CHANNELS]
+        self.credentials = settings.IRC_CREDENTIALS
         
         self.output = Queue.Queue(20)
 
@@ -140,6 +141,9 @@ class Connection(object, SingleServerIRCBot):
         Initial server welcome message, join all channels
         """
         logger.info("Received welcome.")
+
+        # try to authenticate
+        self.auth()
 
         to_join = self.c.to_join or []
         logger.info("Joining %s channels"%len(to_join))
@@ -191,17 +195,25 @@ class Connection(object, SingleServerIRCBot):
         self.log((target, phrase))
         self.connection.privmsg(target, phrase)
 
+    def on_invite(self, connection, event):
+        print event.arguments
+        self.message_handler(connection, event)
+
+
+
     def on_pubmsg(self, connection, event):
         """
         On every pubmsg received
         """
         self.message_handler(connection, event)
+        print event
 
     def on_privmsg(self, connection, event):
         """
         On every private message received
         """
         self.message_handler(connection, event)
+        print event
 
     def log(self, thing, urgency='sys'):
         """
@@ -237,6 +249,14 @@ class Connection(object, SingleServerIRCBot):
         self.add_history(event)
         self.log(event)
 
+        #print "EVENT REF %s \"%s\" " % (event.ref, event.message)
+        logger.info(event.message)
+
+        if event.eventtype() == 'invite':
+            self.join(event.message)
+
+#        print event.message
+
         self.handler.handle(connection, event)
 
     def add_history(self, event):
@@ -249,6 +269,18 @@ class Connection(object, SingleServerIRCBot):
         history.insert(0, event_to_dict(event))
 
         self.set_history(event.target(), history)
+
+    def auth(self):
+        """
+        Attempt server authentication
+        """
+        logger.info("Attempting to auth to %s"%self.credentials['authority'])
+        
+        if self.credentials is not None:
+            self.privmsg (
+                self.credentials['authority'],
+                self.credentials['command'] % self.credentials['creds'] )
+
 
     def join(self, channel):
         """

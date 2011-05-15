@@ -93,6 +93,14 @@ class fake_intel:
         print self.msg
         return None
 
+class karma(WinnieSQLObject):
+    """
+    Voting for terms
+    """
+    class sqlmeta:
+        fromDatabase = True
+
+
 class account(WinnieSQLObject):
     """
     Represents a user's presence in the system
