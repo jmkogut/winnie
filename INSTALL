@@ -52,3 +52,10 @@ Instead of giving you details, I'll do a quick rundown of how I install winnie.
 -   db9@pooh:~$ vim winnie/settings.py
     # The line that goes 'DATABASE = "mysql://..." needs changed
     # If you aren't using a standard path, then change 'PATH = "..."'
+
+ ** Import the data
+-   db9@pooh:~$ mysql -u winnie -p winnie < sql/initial_database.sql
+    Enter password:
+-   db9@pooh:~$ mysql -u winnie -p winnie < sql/procedures.sql
+    Enter password:
+
