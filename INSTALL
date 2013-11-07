@@ -8,7 +8,7 @@ Instead of giving you details, I'll do a quick rundown of how I install winnie.
 					python-sqlobject python-yaml \
 					python-simplejson python-mysqldb \
 					python-memcache python-paste \
-					python-webob
+					python-webob python-numpy
 
  ** Install jmkogut/framework from github (for winnie.web)
 
