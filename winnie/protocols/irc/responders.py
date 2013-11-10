@@ -119,6 +119,7 @@ def handler(*args, **kwargs):
                # event,
                 event.target(),
                 "%s: %s"% (params[0], resp.strip())
+
             )
         else:
             logger.info("GOT A BLANK RESPONSE")
@@ -593,8 +594,6 @@ class Handler(object):
                 # Courtesy of notabel, unambiguous commands
                 cmd = event.arguments()[0][len(self.handler_prefix):]
                 matches = filter(lambda k: cmd.startswith(k), self.handlers.keys())
-#                logger.info("handler keys = %s"%self.handlers.keys())
-#                logger.info("command %s matches %s"%(cmd,matches))
                 if len(matches) == 1:
                     self.handlers[matches[0]](connection, event)
                     return None
