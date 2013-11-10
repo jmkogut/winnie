@@ -11,23 +11,24 @@ LOGSIZE = 50
 # IRC settings
 IRC = (
     # nick first, any alt names after that (also things that people can call her)
-    ('winniepooh','winnie','poohbear','thepooh','bear','pooh'),
-    ('irc.freenode.net', 6667)    # server
+    ('winnie','winniepooh','poohbear','thepooh','bear','pooh'),
+    ('irc.subluminal.net', 6667)    # server
+    # ('irc.freenode.net', 6667)    # server
 )
 
 IRC_CHANNELS = (
     '#'+IRC[0][0],                     # join the channel with our nickname
-#    '#r.trees',
+    #'#boats',
 #    '#trees',
 #    '#weedit'
 )
 IRC_CREDENTIALS = {
     'authority':'nickserv',
     'command':'identify %s %s',
-    'creds': ('dottru@gmail.com', 'gottolovethe1')
+    'creds': ('dottru@gmail.com', '')
 }
 # The db connection string
-DATABASE = "mysql://winnie:lolhax@localhost/winnie"
+DATABASE = "mysql://winnie:winnie@localhost/winnie"
 
 # Handler Prefix (for commands %channels, %help, etc)
 HANDLER_PREFIX = ':'

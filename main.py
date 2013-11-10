@@ -11,6 +11,11 @@ from winnie.web import server as HTTP
 def main():
     try:
         irc = IRC.Connection()
+
+        http = HTTP.Server()
+        http.communicator = irc
+
+        http.start()
         irc.start()
 
     except KeyboardInterrupt, e:

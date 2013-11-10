@@ -3,6 +3,11 @@ The installation is somewhat simple. It is not automated though.
 Instead of giving you details, I'll do a quick rundown of how I install winnie.
 
 
+
+ ** Install the shit winnie depends on.
+-   winnie@pooh:~/projects/winnie$ sudo apt-get install mysql-server \
+                    memcached
+
  ** Install the libraries winnie depends on.
 -   winnie@pooh:~/projects/winnie$ sudo apt-get install python-irclib \
 					python-sqlobject python-yaml \
