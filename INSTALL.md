@@ -1,3 +1,19 @@
+**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+
+- [A Dream Come True](#a-dream-come-true)
+	- [Table of contents](#table-of-contents)
+	- [(Seriously, the fuck?)](#seriously-the-fuck)
+	- [Building a home for your winnie.](#building-a-home-for-your-winnie)
+	- [Pre-Requisites](#pre-requisites)
+		- [Python libraries](#python-libraries)
+		- [Web framework.](#web-framework)
+		- [Natural Language Processing Toolkit](#natural-language-processing-toolkit)
+	- [Configuration](#configuration)
+		- [MySQL connection](#mysql-connection)
+		- [Random nonsense too.](#random-nonsense-too)
+		- [Channel configuration](#channel-configuration)
+	- [Enjoy!](#enjoy!)
+
 # A Dream Come True
 
 ## Table of contents
