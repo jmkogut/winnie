@@ -24,4 +24,4 @@ Get fucked.
 
 [^1]: http://nltk.org/
 [^2]: http://github.com/abzde/
-[INSTALLATION]: /jmkogut/winnie/blob/master/doc/INSTALL.md
+[INSTALLATION]: http://github.com/jmkogut/winnie/blob/master/doc/INSTALL.md
