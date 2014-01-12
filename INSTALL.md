@@ -1,7 +1,14 @@
-# Building a home for your winnie.
+# A Dream Come True
 
-* Table of contents
+## Table of contents
+
 {:toc}
+
+## (Seriously, the fuck?)
+
+I don’t know man, I got here just as confused as you. From what I can tell after browsing the source, this was originally an IRC bot written by some autistic fuck with delusions of grandeur. It’s a haphazard jumble of files and codes that you probably wouldn’t understand anyway. Turn back now, before it’s too late.
+
+## Building a home for your winnie.
 
 Winnie depends on a variety of libraries, databases, and configuration files to thrive. You can cherry-pick 
 which parts of this guide you would like to follow, but you might as well just take a shit in your kitchen sink 
@@ -10,13 +17,14 @@ right now, for all the good it would do.
 I do believe an automated build / install process will be in order some day, right after winnie gets a complete
 rewrite in some esoteric language. (I'm looking at you, Haskell.) For now the process is all manual.
 
-Get comfortable; this will take a while.
+You really should get comfortable; this will take a while.
 
 
 ## Pre-Requisites
-*Install the libraries winnie depends on.*
 
-1.   Install yourself a few necessary python libraries.
+### Python libraries
+
+1.   Install for yourself a few necessary python libraries. shouldn't take long~
  
     ```bash
     sudo apt-get install python-irclib
@@ -27,10 +35,14 @@ Get comfortable; this will take a while.
     
         Please notify me if you have to install **ANYTHING** else. I hate forgetting things.
 
+### Web framework.
 
 2.   After that, you should install [jmkogut/framework](http://github.com/jmkogut/framework) for the winnie web interface. (This finds a home globally in the Python package directory.)
 
+### Natural Language Processing Toolkit
+
 3.    Then, the Python natural language processing toolkit. (One of the coolest libraries I've ever had the joy of using, I must add.)
+
 
       ```bash
       $ easy_install nltk
@@ -60,6 +72,8 @@ Get comfortable; this will take a while.
           ```          
           
 ## Configuration
+
+### MySQL connection
 
 1.    Login to MySQL.
   
@@ -92,10 +106,18 @@ Get comfortable; this will take a while.
       
       needs changed. If you aren't using a standard path, then change 'PATH = "..."' as well while you're here. If you don't know what that means, just quit now.
 
+### Random nonsense too.
+
 2.    I'm not quite sure what comes next so give me a few minutes to try installing her again and verify that these steps aren't total bullshit.
 
   > I am, at any rate, convinced that winnie has feelings.
 
+### Channel configuration
+
 3.    Treat her with the love and respect that she deserves and `winnie` will be your waifu forever.
  
+
+## Enjoy!
+
+That's definitely the final step.
  
