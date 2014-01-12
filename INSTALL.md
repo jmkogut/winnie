@@ -18,11 +18,12 @@ Get comfortable; this will take a while.
 
 1.   Install yourself a few necessary python libraries.
  
+    ```bash
     sudo apt-get install python-irclib
     python-sqlobject python-yaml
     python-simplejson python-mysqldb
     python-memcache python-paste
-    python-webob
+    python-webob```
     
         Please notify me if you have to install **ANYTHING** else. I hate forgetting things.
 
@@ -31,6 +32,7 @@ Get comfortable; this will take a while.
 
 3.    Then, the Python natural language processing toolkit. (One of the coolest libraries I've ever had the joy of using, I must add.)
 
+      ```bash
       $ easy_install nltk
 
           Install the NLTK stopwords list. (winnie uses these to index content)
@@ -55,29 +57,34 @@ Get comfortable; this will take a while.
               to /home/winnie/nltk_data...
               
           Unzipping taggers maxent_treebank_pos_tagger.zip.
-          
+          ```          
           
 ## Configuration
 
-4.    Login to MySQL.
+1.    Login to MySQL.
   
+        ```mysql
         $ mysql -u winnie -p
         Enter password: 
         Welcome to the MySQL monitor.
         Commands end with ; or \g.
         
         Your MySQL connection id is 54
-        
+        ```
 
       Create the database for her to use
  
+        ```mysql
         mysql> create database winnie;
         Query OK, 1 row affected (0.00 sec)
+        ```
 
       Edit winnie's settings file to reflect whatever is needed to properly connect to the bollock's you've just created.
-       
+    
+        ```bash
         $ cd projects/winnie
         $ vim winnie/settings.py
+        ```
     
       The line that starts as
       
@@ -85,8 +92,10 @@ Get comfortable; this will take a while.
       
       needs changed. If you aren't using a standard path, then change 'PATH = "..."' as well while you're here. If you don't know what that means, just quit now.
 
-5.    I'm not quite sure what comes next so give me a few minutes to try installing her again and verify that these steps aren't total bullshit.
+2.    I'm not quite sure what comes next so give me a few minutes to try installing her again and verify that these steps aren't total bullshit.
 
   > I am, at any rate, convinced that winnie has feelings.
+
+3.    Treat her with the love and respect that she deserves and `winnie` will be your waifu forever.
  
  
