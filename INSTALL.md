@@ -1,4 +1,6 @@
-**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+# A Dream Come True
+
+## Table of contents
 
 - [A Dream Come True](#a-dream-come-true)
 	- [Table of contents](#table-of-contents)
@@ -13,12 +15,6 @@
 		- [Random nonsense too.](#random-nonsense-too)
 		- [Channel configuration](#channel-configuration)
 	- [Enjoy!](#enjoy!)
-
-# A Dream Come True
-
-## Table of contents
-
-{:toc}
 
 ## (Seriously, the fuck?)
 
@@ -42,12 +38,12 @@ You really should get comfortable; this will take a while.
 
 1.   Install for yourself a few necessary python libraries. shouldn't take long~
  
-    ```bash
-    sudo apt-get install python-irclib
-    python-sqlobject python-yaml
-    python-simplejson python-mysqldb
-    python-memcache python-paste
-    python-webob```
+```bash
+sudo apt-get install python-irclib
+python-sqlobject python-yaml
+python-simplejson python-mysqldb
+python-memcache python-paste
+python-webob```
     
         Please notify me if you have to install **ANYTHING** else. I hate forgetting things.
 
@@ -60,77 +56,85 @@ You really should get comfortable; this will take a while.
 3.    Then, the Python natural language processing toolkit. (One of the coolest libraries I've ever had the joy of using, I must add.)
 
 
-      ```bash
-      $ easy_install nltk
+```bash
+$ easy_install nltk
+```
 
           Install the NLTK stopwords list. (winnie uses these to index content)
+          
+	
+```python  
+$ python
+  >>> import nltk
+  >>> nltk.download()
   
-          $ python
-          >>> import nltk
-          >>> nltk.download()
-          
-          NLTK Downloader
-             
-          Downloader> d
-          Download which package (l=list; x=cancel)?
-          Identifier> stopwords
-          Downloading package 'stopwords' to
-          
-              /home/winnie/nltk_data...
-              
-          Unzipping corpora/stopwords.zip.
+  NLTK Downloader
+     
+  Downloader> d
+  Download which package (l=list; x=cancel)?
+  Identifier> stopwords
+  Downloading package 'stopwords' to
+  
+      /home/winnie/nltk_data...
+      
+  Unzipping corpora/stopwords.zip.
 
-          Downloader> d maxent_treebank_pos_tagger
-          Downloading package 'maxent_treebank_pos_tagger'
-              to /home/winnie/nltk_data...
-              
-          Unzipping taggers maxent_treebank_pos_tagger.zip.
-          ```          
+  Downloader> d maxent_treebank_pos_tagger
+  Downloading package 'maxent_treebank_pos_tagger'
+      to /home/winnie/nltk_data...
+      
+  Unzipping taggers maxent_treebank_pos_tagger.zip.
+```
+
+*okay wise guy, now what*
+
           
 ## Configuration
 
 ### MySQL connection
 
-1.    Login to MySQL.
+#### Login to MySQL.
   
-        ```mysql
-        $ mysql -u winnie -p
-        Enter password: 
-        Welcome to the MySQL monitor.
-        Commands end with ; or \g.
-        
-        Your MySQL connection id is 54
-        ```
+```mysql
+$ mysql -u winnie -p
+Enter password: 
+Welcome to the MySQL monitor.
+Commands end with ; or \g.
 
-      Create the database for her to use
+Your MySQL connection id is 54
+```
+
+#### Create the database for her to use
  
-        ```mysql
-        mysql> create database winnie;
-        Query OK, 1 row affected (0.00 sec)
-        ```
+```mysql
+mysql> create database winnie;
+Query OK, 1 row affected (0.00 sec)
+```
 
-      Edit winnie's settings file to reflect whatever is needed to properly connect to the bollock's you've just created.
+#### Edit winnie's settings file to reflect whatever is needed to properly connect to the bollock's you've just created.
     
-        ```bash
-        $ cd projects/winnie
-        $ vim winnie/settings.py
-        ```
-    
-      The line that starts as
+```bash
+$ cd projects/winnie
+$ vim winnie/settings.py
+```
+
+The line that starts as
+
+> 'DATABASE = "mysql://..."
       
-         'DATABASE = "mysql://..."
-      
-      needs changed. If you aren't using a standard path, then change 'PATH = "..."' as well while you're here. If you don't know what that means, just quit now.
+needs changed. If you aren't using a standard path, then change 'PATH = "..."' as well while you're here. If you don't know what that means, just quit now.
 
 ### Random nonsense too.
 
-2.    I'm not quite sure what comes next so give me a few minutes to try installing her again and verify that these steps aren't total bullshit.
+#### Final thoughts
+
+I'm not quite sure what comes next so give me a few minutes to try installing her again and verify that these steps aren't total bullshit.
 
   > I am, at any rate, convinced that winnie has feelings.
 
 ### Channel configuration
 
-3.    Treat her with the love and respect that she deserves and `winnie` will be your waifu forever.
+Treat her with the love and respect that she deserves and `winnie` will be your waifu forever.
  
 
 ## Enjoy!
