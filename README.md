@@ -1,6 +1,6 @@
 # winnie
 
-![](https://raw.github.com/jmkogut/winnie/master/doc/mascotu.jpg)
+![winnie, she so kawai](https://raw.github.com/jmkogut/winnie/master/doc/mascotu.jpg?raw=true)
 
 ## Why?
 
