@@ -24,33 +24,34 @@ You really should get comfortable; this will take a while.
 
 ### Python libraries
 
-1.   Install for yourself a few necessary python libraries. shouldn't take long~
+Install for yourself a few necessary python libraries. shouldn't take long~
  
 ```bash
 sudo apt-get install python-irclib
 python-sqlobject python-yaml
 python-simplejson python-mysqldb
 python-memcache python-paste
-python-webob```
-    
-        Please notify me if you have to install **ANYTHING** else. I hate forgetting things.
+python-webob
+```
+
+Please notify me if you have to install **ANYTHING** else. I hate forgetting things.
 
 ### Web framework.
 
-2.   After that, you should install [jmkogut/framework](http://github.com/jmkogut/framework) for the winnie web interface. (This finds a home globally in the Python package directory.)
+After that, you should install [jmkogut/framework](http://github.com/jmkogut/framework) for the winnie web interface. (This finds a home globally in the Python package directory.)
 
 ### Natural Language Processing Toolkit
 
-3.    Then, the Python natural language processing toolkit. (One of the coolest libraries I've ever had the joy of using, I must add.)
+Then, the Python natural language processing toolkit. (One of the coolest libraries I've ever had the joy of using, I must add.)
 
 
 ```bash
 $ easy_install nltk
 ```
 
-          Install the NLTK stopwords list. (winnie uses these to index content)
-          
-	
+Install the NLTK stopwords list. (winnie uses these to index content)
+
+
 ```python  
 $ python
   >>> import nltk
@@ -112,7 +113,7 @@ The line that starts as
       
 needs changed. If you aren't using a standard path, then change 'PATH = "..."' as well while you're here. If you don't know what that means, just quit now.
 
-### Random nonsense too.
+### You might be ready.
 
 #### Final thoughts
 
