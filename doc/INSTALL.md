@@ -2,6 +2,23 @@
 
 ## Table of contents
 
+- [A Dream Come True](#a-dream-come-true)
+	- [Table of contents](#table-of-contents)
+	- [(Seriously, the fuck?)](#seriously-the-fuck)
+	- [Building a home for your winnie.](#building-a-home-for-your-winnie)
+	- [Pre-Requisites](#pre-requisites)
+		- [Python libraries](#python-libraries)
+		- [Web framework.](#web-framework)
+		- [Natural Language Processing Toolkit](#natural-language-processing-toolkit)
+	- [Configuration](#configuration)
+		- [MySQL connection](#mysql-connection)
+			- [Login to MySQL.](#login-to-mysql)
+			- [Create the database for her to use](#create-the-database-for-her-to-use)
+			- [Edit winnie's settings file to reflect whatever is needed to properly connect to the bollock's you've just created.](#edit-winnie's-settings-file-to-reflect-whatever-is-needed-to-properly-connect-to-the-bollock's-you've-just-created)
+		- [You might be ready.](#you-might-be-ready)
+			- [Final thoughts](#final-thoughts)
+		- [Channel configuration](#channel-configuration)
+	- [Enjoy!](#enjoy!)
 
 
 ## (Seriously, the fuck?)

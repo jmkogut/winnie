@@ -13,9 +13,15 @@ Humour, sometimes. I can't count the amount of *hilarious* and _zany_ situations
 
 I never had the time to actually make her that intelligent, the extent of her speaking abilities involve precisely parrotting people or markov chain generation, neither of which are entirely perfect. Give it time.
 
+## Technical shit?
+
+I thought you'd never ask! Have a gander at me [INSTALLATION](^INST) document. :)
+
+
 ### Thank you
 
 Get fucked.
 
 [^1]: http://nltk.org/
 [^2]: http://github.com/abzde/
+[^INST]: /jmkogut/winnie/blob/master/doc/INSTALL.md
