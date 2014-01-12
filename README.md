@@ -18,5 +18,4 @@ I never had the time to actually make her that intelligent, the extent of her sp
 Get fucked.
 
 [^1]: http://nltk.org/
-
-]^2]: http://github.com/abzde/
+[^2]: http://github.com/abzde/
