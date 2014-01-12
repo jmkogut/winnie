@@ -15,7 +15,7 @@ I never had the time to actually make her that intelligent, the extent of her sp
 
 ## Technical shit?
 
-I thought you'd never ask! Have a gander at me [INSTALLATION](^INST) document. :)
+I thought you'd never ask! Have a gander at me [INSTALLATION] document. :)
 
 
 ### Thank you
@@ -24,4 +24,4 @@ Get fucked.
 
 [^1]: http://nltk.org/
 [^2]: http://github.com/abzde/
-[^INST]: /jmkogut/winnie/blob/master/doc/INSTALL.md
+[INSTALLATION]: /jmkogut/winnie/blob/master/doc/INSTALL.md
