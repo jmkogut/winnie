@@ -1,0 +1,17 @@
+{
+	"folders":
+	[
+		{
+			"follow_symlinks": true,
+			"path": "."
+		}
+	],
+
+	"settings": {
+        "sublime-view-in-browser": {
+            
+			"baseUrl": "http://localhost:8080",
+			"basePath": "/Users/joshua/Projects/winnie",
+        }
+    }
+}

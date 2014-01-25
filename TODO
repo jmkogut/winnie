@@ -1,0 +1,10 @@
+ * Adapt gets_to_speak based on how many active users there are in a channel
+ * Match based on two keywords not just a single one
+ * Semantic awareness
+ * Negging/possing (+++ or 'wtf' winnie)
+ * Convert to twisted IRC + NLTK
+ * Keep a frequency/business rating for channels
+ * Fix user trust to reload dynamically
+ * Done - Respond to direct inquiries
+ * Make winnie spend a certain amount of the time 'away'
+ * Channel inactivity should trigger /away or a provoking statement

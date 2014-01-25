@@ -1,0 +1,77 @@
+body {
+    background-color: #f9f2b6;
+}
+
+#container {
+    width: 800px;
+    position: absolute;
+    left: 50%;
+    margin-left: -400px;
+}
+
+div.watch, div.detail {
+    padding: 10px;
+    clear: both;
+}
+
+.output {
+    background: #fff2f2 url('http://o.imm.io/6ZV.jpg') bottom right no-repeat;
+    border-bottom: 1px solid gray;
+    border-top: 1px solid gray;
+}
+
+.output ul.items {
+    height: 500px;
+}
+.scrolled ul.items {
+    overflow: scroll;
+}
+.fixed ul.items {
+    overflow: hidden;
+}
+
+.output ul.items li {
+    list-style-type: none;
+    display: inline;
+}
+
+li .event {
+    padding: 5px;
+}
+
+li .event .source {
+    display: block;
+    float: left;
+    width: 80px;
+    text-align: right;
+    color: #555;
+}
+
+li .event .argument {
+    display: block;
+    width: 80%;
+    margin-left: 90px;
+}
+div.choices {
+    padding: 10px;
+    clear: both;
+}
+div.choices ul.items {
+    margin: 0px;
+    padding: 0px;
+}
+.clickable {}
+.clickable:hover {
+    font-weight: bold;
+}
+
+div.choices ul.items li {
+    list-style-type: none;
+    display: block;
+    padding: 10px;
+    margin: 5px;
+    float: left;
+}
+/*
+Winnie's pallete: http://www.colourlovers.com/palette/1120270/easter_peep
+*/
