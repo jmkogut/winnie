@@ -1,3 +1,0 @@
-// winnie index script
-
-
