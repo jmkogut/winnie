@@ -15,3 +15,4 @@ FEATURES (TODO)
  * Console log output hilighting, to differentiate between what's being learned and what is being spoken off of.
  * Use websockets for monitoring, :: http://autobahn.ws/python/tutorials/echo/
  * http://yz.mit.edu/wp/web-sockets-tutorial-with-simple-python-server/
+ * Xapian guide - http://invisibleroads.com/tutorials/xapian-search-pylons.html
