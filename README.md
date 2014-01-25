@@ -14,3 +14,4 @@ FEATURES (TODO)
  * Karma system (++ // --) for when you want to give a user meaningless Internet points.
  * Console log output hilighting, to differentiate between what's being learned and what is being spoken off of.
  * Use websockets for monitoring, :: http://autobahn.ws/python/tutorials/echo/
+ * http://yz.mit.edu/wp/web-sockets-tutorial-with-simple-python-server/
