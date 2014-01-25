@@ -101,9 +101,9 @@ div.left h2 {
 }
 
 p.woof {
-    position:absolute;
-    width:100%;
-    top:100%;
+    position: absolute;
+    width: 100%;
+    top: 60%;
 
     background: url("http://resume.chex.io/winnie/images/mascotu.png") no-repeat center;
     text-indent: -9999px;
