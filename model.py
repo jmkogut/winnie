@@ -13,8 +13,18 @@ from sqlalchemy.orm.exc import *
 
 engine = create_engine('sqlite:///winnie.sqlite', echo=True)
 Base = declarative_base()
-Session = scoped_session(sessionmaker(bind=engine))
+Session = scoped_session(sessionmaker(
+    bind=engine,
+    autoflush=True,
+    autocommit=True
+))
 Base.metadata.create_all(engine)
+
+# //////////////////////
+
+@event.listens_for(mapper, 'init')
+def auto_add(target, args, kwargs):
+    Session.add(target)
 
 # //////////////////////
 
