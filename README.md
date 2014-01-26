@@ -16,3 +16,26 @@ FEATURES (TODO)
  * Use websockets for monitoring, :: http://autobahn.ws/python/tutorials/echo/
  * http://yz.mit.edu/wp/web-sockets-tutorial-with-simple-python-server/
  * Xapian guide - http://invisibleroads.com/tutorials/xapian-search-pylons.html
+
+BOT IDEAS
+---------
+
+ * Logging - File, sqlite, http post mayhaps, whoknows
+ * Live code reloading
+ * web irc client (secondary project there really.)
+ * karma - allows you to upvote or downvote a user :: abzde++ or abzde-- and have the recorded votes saved.
+ * greeter - acknowleges known users with positive karma score. May disparagingly greet users who have been downvoted, 
+ * github features, i.e. self-reporting bugs from the users, notifying channels of commits to the repo
+ * lastseen & notify - allows you to track when a member was lastseen. Optionally, you can leave a message to be delivered to that user as
+   SOON as he says something. Winnie will continue reporting until PM'd with a confirmation that the msg was received
+ * google / github search
+ * github activity - notify when somebody subscribes/watches the winnie repo
+ * Q&A support - learn common questions and try to answer them in the future.
+ * Link archive - As links are posted, they become viewable in a stream-of-consciousness via the web interface
+ * league of legends integration - http://developer.riotgames.com/docs/getting-started
+ * feature suggestions by users
+ * breaking news. I'm a bit wary on this though.
+ * Markov response generation
+ * Parroting via fulltext search and a dice-roll.
+ * reports where I am at any given time.
+ * pastebin - initiates a PM and after EOF will upload text to a pastebin and put the uri in the chawnnel
