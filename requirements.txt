@@ -1,0 +1,16 @@
+Mako==0.9.1
+MarkupSafe==0.18
+SQLAlchemy==0.9.1
+Twisted==13.2.0
+argparse==1.2.1
+autobahn==0.7.4
+gevent==1.0
+greenlet==0.4.2
+ipython==1.1.0
+irc==8.5.4
+irckit==0.1.1
+six==1.5.2
+txwebsockets==0.1
+wsgiref==0.1.2
+yolk==0.4.3
+zope.interface==4.0.5
