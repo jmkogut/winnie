@@ -23,7 +23,7 @@ BOT IDEAS
 ---------
 
  * Logging - File, sqlite, http post mayhaps, whoknows
- * Live code reloading
+ * Live code reloading (done - 01/26/2014)
  * web irc client (secondary project there really.)
  * karma - allows you to upvote or downvote a user :: abzde++ or abzde-- and have the recorded votes saved.
  * greeter - acknowleges known users with positive karma score. May disparagingly greet users who have been downvoted, 
@@ -48,3 +48,4 @@ BOT IDEAS
  * Save specific intel as quotes and give users the choice to vote on em.
  * Search channel history for [topic], giving a weblink to more detailed results.
  * Activity stats / graphs / live tag cloud
+ * Bitcoin stats / market rates # fucking why though?
