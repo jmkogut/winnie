@@ -41,3 +41,10 @@ BOT IDEAS
  * Parroting via fulltext search and a dice-roll.
  * reports where I am at any given time.
  * pastebin - initiates a PM and after EOF will upload text to a pastebin and put the uri in the chawnnel
+ * fortune - wrapper for linux fortune
+ * Quote movies like The Big Lebowski and/or Pulp Fiction when appropriate.
+ * Report users for reposting links. <- Hahahaha
+ * Conduct polls, create them in IRC or the webiu.
+ * Save specific intel as quotes and give users the choice to vote on em.
+ * Search channel history for [topic], giving a weblink to more detailed results.
+ * Activity stats / graphs / live tag cloud
