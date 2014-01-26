@@ -7,6 +7,8 @@ relevent. The original version used a DIY irc lib and MySQL FULLTEXT search to f
 
 This version uses the twisted protocol framework and SQLAlchemy for the orm.
 
+![winnie, she so kawai](https://raw.github.com/jmkogut/winnie/master/doc/mascotu.jpg?raw=true)
+
 FEATURES (TODO)
 ---------------
 
