@@ -49,3 +49,4 @@ BOT IDEAS
  * Search channel history for [topic], giving a weblink to more detailed results.
  * Activity stats / graphs / live tag cloud
  * Bitcoin stats / market rates # fucking why though?
+ * Redesign using bootstrap / sass - http://blog.getbootstrap.com/2014/01/30/bootstrap-3-1-0-released/

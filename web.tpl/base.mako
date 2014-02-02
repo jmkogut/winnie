@@ -23,12 +23,12 @@
 
 
     <script type="text/javascript">
-         var socket = null;
-         var isopen = false;
+            var socket = null;
+            var isopen = false;
 
-         window.onload = function() {
+            window.onload = function() {
 
-             socket = new WebSocket("ws://abzde.com:8888");
+            socket = new WebSocket("ws://abzde.com:8888");
             socket.binaryType = "arraybuffer";
 
             socket.onopen = function() {
@@ -56,9 +56,9 @@
             }
          };
 
-         function sendText() {
+         function sendText( txt ) {
             if (isopen) {
-               socket.send("Hello, world!");
+                socket.send(txt);
                console.log("Text message sent.");               
             } else {
                console.log("Connection not opened.")
@@ -81,16 +81,13 @@
 
 </head>
 <body>
-
-
     <div class="header">
         <nav>
         <ul>
-            <li>home</li>
-            <li>features</li>
-            <li>shit</li>
-            <li>musings</li>
-            <li>credits</li>
+            <li><a href="/">Dashboard</a></li>
+            <li><a href="/streams">Streams</a></li>
+            <li><a href="/intel">Intel</a></li>
+            <li><a href="/archives">Archives</a></li>
         </ul>
         </nav>
     </div>

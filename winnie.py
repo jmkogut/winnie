@@ -11,21 +11,11 @@ from twisted.web.static import File
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
-
 from twisted.internet import protocol, reactor
 
 import os
 from twisted.python.rebuild import rebuild
 import process
-
-class Home(resource.Resource):
-    isLeaf = True
-    def __init__(self, irc_factory):
-        self.irc = irc_factory
-
-    def render_GET(self, request):
-        self.irc.send_msg("HTTP Access!")
-        return "<html>Welcome Home!</html>"
 
 class Handler(object):
     filename = os.getcwd() + "/process.py"
@@ -49,9 +39,7 @@ class Handler(object):
             self.loader()
         return self.instance
 
-
-
-class TalkBot(irc.IRCClient):
+class IRCClient(irc.IRCClient):
     handler = Handler()
 
     def _get_nickname(self):
@@ -64,18 +52,18 @@ class TalkBot(irc.IRCClient):
  
     def signedOn(self):
         self.join(self.factory.channel)
-        print "Signed on as %s." % (self.nickname,)
+        print " -- Signed on as [%s]" % (self.nickname,)
  
     def joined(self, channel):
-        print "Joined %s." % (channel,)
+        print ' -- Joined %s' % (channel)
  
     def privmsg(self, user, channel, msg):
         # Send this privmsg off to the Handler
         self.handler.get().irc( source=user, target=channel, text=msg )
+        
 
-
-class TalkBotFactory(protocol.ClientFactory):
-    protocol = TalkBot
+class IRCClientFactory(protocol.ClientFactory):
+    protocol = IRCClient
     def __init__(self, channel, nickname='winnie'):
         self.channel = channel
         self.nickname = nickname
@@ -122,42 +110,68 @@ class WebUI(resource.Resource):
             'page_title': "fooo"
         })
 
+# ////////////////////////////
 
 class EchoWS(WebSocketServerProtocol):
-
     def onConnect(self, request):
         print("Client connecting: {0}".format(request.peer))
+        self.factory.irc.send_msg("WebSocket opened at %s"%(request.peer))
 
     def onOpen(self):
         print("WebSocket connection open.")
-        self.sendMessage("hey cutie",False)
+        self.sendMessage("welcome", False)
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))
+        self.factory.irc.send_msg("WebSocket closed at %s"%(request.peer))
 
     def onMessage(self, m, b):
         print("Text message received: {0}".format(m.decode('utf8')))
+        self.factory.irc.send_msg("<- ws msg :: %s"%(m))
         self.sendMessage(m, b)
+
+class WSFactory(WebSocketServerFactory):
+    protocol = EchoWS
+
+    def __init__(self, uri='ws://localhost'):
+        WebSocketServerFactory.__init__(self, uri)
+        self.clients = []
+
+    def register(self, client):
+        if not client in self.clients:
+            self.clients.append(client)
+
+    def unregister(self, client):
+        if client in self.clients:
+            self.clients.remove(client)
+
+    def send_all(self, msg):
+        for c in self.clients:
+            c.sendMessage(msg, False)
 
 
 # ////////////////////////////
 
 if __name__ == "__main__":
 
-    print 'static :: %s' % (static_dir,)
+    # IRC client connection
+    factory = IRCClientFactory('#bots')
+    reactor.connectTCP('irc.subluminal.net', 6667, factory)
 
+    # HTTP interface
     root = resource.Resource()
     root.putChild("",       WebUI())
     root.putChild("static", File(static_dir))
-
     site = server.Site(root)
     reactor.listenTCP(8080, site)
+    print ' -- HTTP int listening on port 8080'
 
-    wsf = WebSocketServerFactory("ws://abzde.com:8888", debug=False)
+    # WebSocket interface
+    wsf = WSFactory("ws://abzde.com:8888", debug=False)
     wsf.protocol = EchoWS
+    wsf.irc = factory
+    factory.wsf = wsf
     reactor.listenTCP(8888, wsf) 
-
-    factory = TalkBotFactory('#bots')
-    reactor.connectTCP('irc.subluminal.net', 6667, factory)
+    print ' -- WebSocket int listening on port 8888'
 
     reactor.run()
