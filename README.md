@@ -64,3 +64,4 @@ BOT IDEAS
  * Respond to emotes, accept that :D and :) are happy, D: and :O and :| and bad. idk.
  * Github postback url support
  * When somebody quotes lyrics, winnie should jump in and continue singing.
+ * Classify people's thoughts using http://www.stevenloria.com/how-to-build-a-text-classification-system-with-python-and-textblob/
