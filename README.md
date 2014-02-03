@@ -67,3 +67,4 @@ BOT IDEAS
  * Github postback url support
  * When somebody quotes lyrics, winnie should jump in and continue singing.
  * Classify people's thoughts using http://www.stevenloria.com/how-to-build-a-text-classification-system-with-python-and-textblob/
+ * D A Y  C H A N G E ~ support
