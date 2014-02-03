@@ -13,7 +13,7 @@ class Handler(object):
         return os.stat(self.filename).st_mtime
 
     def loader(self):
-        print "Rebuilding process."
+        print " -- Rebuilding handler process."
         rebuild(process)
         self.lastmodified = self.getModified()
         self.instance = process.Process()
@@ -38,7 +38,9 @@ class IRCClient(irc.IRCClient):
         self.factory.clients.append(self)
  
     def signedOn(self):
-        self.join(self.factory.channel)
+        for chan in self.factory.channels:
+            self.join( chan )
+
         print " -- Signed on as [%s]" % (self.nickname,)
  
     def joined(self, channel):
@@ -50,16 +52,17 @@ class IRCClient(irc.IRCClient):
                 source=user,
                 target=channel,
                 text=msg,
+                client=self,
                 factory=self.factory
         )
         
-
 class IRCClientFactory(protocol.ClientFactory):
     protocol = IRCClient
-    def __init__(self, channel, nickname='winnie'):
-        self.channel = channel
+    def __init__(self, channels, config=None, nickname='winnie'):
+        self.channels = channels
         self.nickname = nickname
-        self.clients = []
+        self.clients  = []
+        self.cfg      = config
  
     def clientConnectionLost(self, connector, reason):
         print "Lost connection (%s), reconnecting." % (reason,)
@@ -68,7 +71,9 @@ class IRCClientFactory(protocol.ClientFactory):
     def clientConnectionFailed(self, connector, reason):
         print "Could not connect: %s" % (reason,)
  
-    def send_msg(self, msg):
+    def send_msg(self, channel, msg):
         for client in self.clients:
-            client.say(self.channel, msg)
-
+            client.say(channel, msg)
+            
+    def send_ctrl_msg(self, msg):
+        self.send_msg(cfg.CMD_CHAN, msg)

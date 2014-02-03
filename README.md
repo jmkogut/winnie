@@ -50,3 +50,10 @@ BOT IDEAS
  * Activity stats / graphs / live tag cloud
  * Bitcoin stats / market rates # fucking why though?
  * Redesign using bootstrap / sass - http://blog.getbootstrap.com/2014/01/30/bootstrap-3-1-0-released/
+ * ASCII art, like this:
+
+         .___,
+      ___('v')___
+      `"-\._./-"'
+          ^ ^
+ * Respond to emotes, accept that :D and :) are happy, D: and :O and :| and bad. idk.

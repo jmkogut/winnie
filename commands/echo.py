@@ -1,4 +1,4 @@
-import hook
+from winnie import hook
 
 @hook.alias( 'websock_echo', priority=0)
 def WSEcho( (src,trg,msg), factory=None, **kw):

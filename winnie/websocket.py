@@ -4,7 +4,7 @@ from autobahn.twisted.websocket import WebSocketServerProtocol, \
 class EchoWS(WebSocketServerProtocol):
     def onConnect(self, request):
         print("Client connecting: {0}".format(request.peer))
-        self.factory.irc.send_msg("WebSocket opened at %s"%(request.peer))
+        self.factory.irc.send_ctrl_msg("WebSocket opened at %s"%(request.peer))
         self.factory.register( self )
 
     def onOpen(self):
@@ -13,7 +13,7 @@ class EchoWS(WebSocketServerProtocol):
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))
-        self.factory.irc.send_msg("WebSocket closed at %s"%(request.peer))
+        self.factory.irc.send_msg("WebSocket closed :: %s"%(reason))
         self.factory.unregister( self )
 
     def onMessage(self, m, b):
@@ -39,4 +39,3 @@ class WSFactory(WebSocketServerFactory):
     def send_msg(self, msg):
         for c in self.clients:
             c.sendMessage(msg, False)
-

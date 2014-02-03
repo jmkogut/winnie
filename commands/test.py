@@ -1,4 +1,4 @@
-import hook
+from winnie import hook
 
 @hook.alias(priority=0)
 def tester( (src,trg,msg), **kw):

@@ -1,5 +1,5 @@
-import hook
-from model import User
+from winnie import hook
+from winnie.model import User
 
 @hook.cmd
 def logger( (src,targ,msg), **kw ):

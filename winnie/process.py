@@ -23,17 +23,15 @@ class DotDict(dict):
         else:
             self[k] = v
 
-def Load(init = False):
-    mtimes    = DotDict()
-    lastfiles = DotDict()
+def Load(init = False, mt=None, cmds=None):
+    mtimes    = DotDict() if not mt else mt
     plugs     = DotDict()
 
     changed = False
 
     ns = DotDict()
 
-    if init:
-        plugs.cmds    = {}
+    if init: plugs.cmds    = {} if not cmds else dict(cmds)
 
     plug_fileset = set(glob.glob(os.path.join('commands','*.py')))
     for fn in plug_fileset:
@@ -43,9 +41,10 @@ def Load(init = False):
             changed    = True
 
             try:
-                code = compile(open(fn,'U').read(), fn, 'exec')
-                ns = DotDict()
-                eval(code, ns)
+                if not cmds or changed:
+                    code = compile(open(fn,'U').read(), fn, 'exec')
+                    ns = DotDict()
+                    eval(code, ns)
             except Exception:
                 print ' -- ERROOOOOOORRRRRR -------------------'
                 traceback.print_exc()
@@ -53,25 +52,40 @@ def Load(init = False):
                     sys.exit()
                 continue
 
-        for obj in ns.itervalues():
-            if hasattr(obj, '_handler'):
-                print 'Found handler %s' % (obj._handler['name'])
-                plugs.cmds[ obj._handler['name'] ] = obj
+        if not cmds or changed:
+            for obj in ns.itervalues():
+                if hasattr(obj, '_handler'):
+                    print 'Found handler %s' % (obj._handler['name'])
+                    plugs.cmds[ obj._handler['name'] ] = obj
 
-    return sorted(plugs.cmds.items(), key=lambda (k,fn): fn._priority)
+    return ( mtimes, sorted(plugs.cmds.items(), key=lambda (k,fn): fn._priority) )
 
 class Process(object):
     def __init__(self):
-        self.plugins = Load(init=True)
-         
-    def irc(self, source=None, target=None, text=None, factory=None):
-        self.dispatch( (source, target, text), factory=factory )
+        mt, plug =  Load(init=True)
+
+        self.plugins = plug
+        self.mtimes = mt
+
+        print ' -- modified_times FOR %s' % (self.mtimes,)
+
+    def update_cmds(self):
+        mt, plug = Load(init=True, mt=self.mtimes, cmds=self.plugins)
+        self.plugins = plug
+        self.mtimes = mt
+
+    def irc(self, source=None, target=None, text=None, **kw ):
+        self.dispatch( (source, target, text), **kw )
 
     def dispatch(self, *args, **kwa):
+        self.update_cmds()
+
         try:
-            for n,h in self.plugins:
-                h( *args, **kwa )
+            for n,h in self.plugins: h( *args, **kwa )
         except Exception:
             traceback.print_exc()
-            print 'A handler fookin died.'
+            kwa['factory'].send_msg( kwa['target'], "A fucking handler crashed idk \
+                how this happened. T_T")
+
+            print ' -- A handler fookin died.'
 
