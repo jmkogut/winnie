@@ -57,3 +57,4 @@ BOT IDEAS
       `"-\._./-"'
           ^ ^
  * Respond to emotes, accept that :D and :) are happy, D: and :O and :| and bad. idk.
+ * Github postback url support
