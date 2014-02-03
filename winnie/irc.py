@@ -76,4 +76,4 @@ class IRCClientFactory(protocol.ClientFactory):
             client.say(channel, msg)
             
     def send_ctrl_msg(self, msg):
-        self.send_msg(cfg.CMD_CHAN, msg)
+        self.send_msg(self.cfg.CMD_CHAN, msg)

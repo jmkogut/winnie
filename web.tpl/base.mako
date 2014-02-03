@@ -39,6 +39,11 @@
             socket.onmessage = function(e) {
                if (typeof e.data == "string") {
                   console.log("Text message received: " + e.data);
+                  var obj = JSON.parse(e.data);
+                  if (obj.hasOwnProperty('irc_event')) {
+                      var el = document.getElementsByClassName('fill')[0];
+                      el.innerHTML += "<br />" + obj.irc_event;
+                  }
                } else {
                   var arr = new Uint8Array(e.data);
                   var hex = '';
@@ -93,10 +98,14 @@
     </div>
 
 
-    <div class="image">
+    <div class="splash">
         <h1>much wow, such oblige</h1>
 
-        <%block name="callout">Default callooot content</%block>
+        <div class="fill">
+
+        </div>
+
+        <%block name="callout"></%block>
     </div>
 
     ${self.body()}

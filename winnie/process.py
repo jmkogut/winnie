@@ -83,9 +83,7 @@ class Process(object):
         try:
             for n,h in self.plugins: h( *args, **kwa )
         except Exception:
+            print ' -- ERROR - Exception ------'
             traceback.print_exc()
-            kwa['factory'].send_msg( kwa['target'], "A fucking handler crashed idk \
-                how this happened. T_T")
-
             print ' -- A handler fookin died.'
 

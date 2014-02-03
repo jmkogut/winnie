@@ -1,13 +1,17 @@
 import re
 import config
 
-def is_hilight(message):
+def is_hilight( (sr, targ, message) ):
     if message.startswith(config.NICK+':'):
         return True
-
+    if targ.startswith(config.NICK):
+        return True
     return False
 
-def is_cmd( prefix, message ):
-    if is_hilight(message):
-        return message.lstrip( '%s: %s '%(config.NICK, prefix) )
+def is_cmd( prefix, (src, target, message), default=None):
+    token = '%s: %s' % (config.NICK, prefix)
+    if is_hilight((src,target,message)):
+        if message.startswith(token):
+            remainder = message.lstrip( token ).strip()
+            return remainder if remainder else default
     return False

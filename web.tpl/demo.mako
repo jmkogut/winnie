@@ -2,7 +2,9 @@
 
 <%block name="title">template teeest!~</%block>
 
+    <!--
     <p class="woof">You're so silly girl.</p>
+    -->
 
 
     <div class="row">

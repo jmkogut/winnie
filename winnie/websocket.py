@@ -13,12 +13,12 @@ class EchoWS(WebSocketServerProtocol):
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))
-        self.factory.irc.send_msg("WebSocket closed :: %s"%(reason))
+        self.factory.irc.send_ctrl_msg("WebSocket closed :: %s"%(reason))
         self.factory.unregister( self )
 
     def onMessage(self, m, b):
         print("Text message received: {0}".format(m.decode('utf8')))
-        self.factory.irc.send_msg("<- ws msg :: %s"%(m))
+        self.factory.irc.send_ctrl_msg("<- ws msg :: %s"%(m))
         self.sendMessage(m, b)
 
 class WSFactory(WebSocketServerFactory):

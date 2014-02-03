@@ -50,9 +50,9 @@ class User(Base):
             return u
 
     @classmethod
-    def learned(cls, nick, text, save=True):
+    def learned(cls, nick, target, text, save=True):
         u = User.find_by(nick)
-        i = Intel(user=u, text=text)
+        i = Intel(user=u, target=target, text=text)
         session.add(i)
 
         if save:
@@ -64,6 +64,7 @@ class Intel(Base):
     id      = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
     text    = Column(String(convert_unicode=True))
+    target  = Column(String(convert_unicode=True))
 
     user    = relationship("User", backref=backref('intels', order_by=id))
 
@@ -79,16 +80,16 @@ def Import( n ):
 if __name__ == '__main__':
     Create()
 
-    i = 0
-    for e in Import("/home/joshua/projects/winnie/sample/boats.log"):
-        i += 1
-        if i % 100 == 0:
-            session.commit()
-            print i
-        try:
-            # print "%s :: %s" % (e[1],e[2])
-            User.learned(e[1].encode('utf8'), e[2].encode('utf8'), False)
-        except UnicodeDecodeError:
-            print "SKIPPEEEEED"
+    # i = 0
+    # for e in Import("/home/joshua/projects/winnie/sample/boats.log"):
+    #     i += 1
+    #     if i % 100 == 0:
+    #         session.commit()
+    #         print i
+    #     try:
+    #         # print "%s :: %s" % (e[1],e[2])
+    #         User.learned(e[1].encode('utf8'), '#boats', e[2].encode('utf8'), False)
+    #     except UnicodeDecodeError:
+    #         print "SKIPPEEEEED"
 
-    session.commit()
+    # session.commit()
