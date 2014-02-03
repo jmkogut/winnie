@@ -52,9 +52,13 @@ BOT IDEAS
  * Redesign using bootstrap / sass - http://blog.getbootstrap.com/2014/01/30/bootstrap-3-1-0-released/
  * ASCII art, like these: 
 
+```
          .___,      c/,,\  <- turtle
       ___('v')___
       `"-\._./-"'
           ^ ^
+```
+
  * Respond to emotes, accept that :D and :) are happy, D: and :O and :| and bad. idk.
  * Github postback url support
+ * When somebody quotes lyrics, winnie should jump in and continue singing.

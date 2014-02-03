@@ -15,3 +15,7 @@ def is_cmd( prefix, (src, target, message), default=None):
             remainder = message.lstrip( token ).strip()
             return remainder if remainder else default
     return False
+
+def mask_to_nick( mask ):
+    if not '!' in mask: return mask
+    else: return mask.split('!')[0]

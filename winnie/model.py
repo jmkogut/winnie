@@ -4,6 +4,7 @@
 # /////////// GUIDES ///////////////////////////
 
 # TODO: Add timestamp on intels
+import datetime
 
 from sqlalchemy import *
 from sqlalchemy.pool import Pool
@@ -34,10 +35,11 @@ def auto_add(target, args, kwargs):
 class User(Base):
     __tablename__ = 'users'
 
-    id    = Column(Integer, primary_key=True)
-    nick  = Column(String(convert_unicode=True))
-    mask  = Column(String(convert_unicode=True))
-
+    id       = Column(Integer, primary_key=True)
+    nick     = Column(String(convert_unicode=True))
+    mask     = Column(String(convert_unicode=True))
+    lastseen = Column(DateTime, default=datetime.datetime.utcnow)
+    
     def __repr__(s): return '<User %s>' % (s.nick,)
 
     @classmethod
@@ -58,6 +60,14 @@ class User(Base):
         if save:
             session.commit()
 
+class Vote(Base):
+    __tablename__ = 'vote'
+
+    id      = Column(Integer, primary_key=True)
+    term    = Column(String(convert_unicode=True))
+    vote    = Column(String(convert_unicode=True))
+    voter   = Column(Integer, ForeignKey('users.id'))
+
 class Intel(Base):
     __tablename__ = 'intel'
 
@@ -67,6 +77,8 @@ class Intel(Base):
     target  = Column(String(convert_unicode=True))
 
     user    = relationship("User", backref=backref('intels', order_by=id))
+
+    created = Column(DateTime, default=datetime.datetime.utcnow)
 
     def __repr__(s): return '<Intel %s>' % (s.id,)
 

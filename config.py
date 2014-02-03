@@ -16,3 +16,5 @@ CONSOLE_ENABLED = True
 CONSOLE_PORT = 2000
 CONSOLE_USER = 'jmkogut'
 CONSOLE_PASS = 'lolhax'
+
+VERIFY_VOTES = False # TODO: implement

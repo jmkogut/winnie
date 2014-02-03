@@ -24,3 +24,11 @@ def leave( (src,targ,msg), client=None, **kw ):
         print 'Received a leave command.'
         client.leave( act )
     return False
+
+@hook.cmd
+def who( (src,targ,msg), client=None, **kw ):
+    act = text.is_cmd( 'who', (src,targ,msg), default=targ )
+    if act:
+        print 'Received a who command.'
+        client.join( act )
+    return False

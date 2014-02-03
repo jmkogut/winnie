@@ -28,6 +28,7 @@ class Handler(object):
 
 class IRCClient(irc.IRCClient):
     handler = Handler()
+    names = {}
 
     def _get_nickname(self):
         return self.factory.nickname
@@ -55,6 +56,51 @@ class IRCClient(irc.IRCClient):
                 client=self,
                 factory=self.factory
         )
+
+    def who(self, channel):
+        "List the users in 'channel', usage: client.who('#testroom')"
+        self.sendLine('WHO %s' % channel)
+
+    def irc_RPL_WHOREPLY(self, *nargs):
+        "Receive WHO reply from server"
+        print 'WHO:', nargs
+
+    def irc_RPL_ENDOFWHO(self, *nargs):
+        "Called when WHO output is complete"
+        print 'WHO COMPLETE'
+        print nargs
+
+    def irc_RPL_NAMREPLY(self, *nargs):
+        'Reply for every time you join a chan.'
+        chan = nargs[1][2]
+        self.names[ chan ] = ([n for n in nargs[1][3].split(' ') if n.strip() != ''])
+        print ' -- Users in %s: %s' % (chan, self.names[chan])
+
+    def irc_unknown(self, prefix, command, params):
+        "Print all unhandled replies, for debugging."
+        return
+        # print 'UNKNOWN:', prefix, command, params
+
+    def userJoined(self, user, chan):
+        if chan in self.names:
+            self.names[ chan ].append( user )
+        print ' -- %s has joined %s' % (user,chan)
+
+    def userLeft(self, user, chan):
+        if chan in self.names:
+            self.names[ chan ].remove( user )
+        print ' -- %s has left %s' % (user,chan)
+
+    def userQuit(self, user, reason):
+        for n in self.names:
+            if user in self.names[n]:
+                self.names[ n ].remove( user )
+        print ' -- %s has quit (Client Exited.)' % user
+
+    def userKicked(self, user, chan, kicker, reason):
+        if chan in self.names:
+            self.names[ chan ].remove( user )
+        print ' -- %s kicked %s from %s [[ %s ]]' % (kicker,user,chan,reason)
         
 class IRCClientFactory(protocol.ClientFactory):
     protocol = IRCClient
