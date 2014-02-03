@@ -60,33 +60,16 @@ def Load(init = False):
 
     return sorted(plugs.cmds.items(), key=lambda (k,fn): fn._priority)
 
-class Dispatch(object):
-    def __init__(self):
-        self.handlers = self.loader()
-
-    def loader(self):
-        return Load(init=True)
-
-    def dispatch(self, *args, **kwa):
-        print self.handlers
-        try:
-            for n,h in self.handlers:
-                h( *args, **kwa )
-        except Exception:
-            traceback.print_exc()
-            print 'A handler fookin died.'
-
-
 class Process(object):
     def __init__(self):
         self.plugins = Load(init=True)
          
     def irc(self, source=None, target=None, text=None, factory=None):
-        self.plugins.dispatch( (source, target, text), factory=factor )
+        self.dispatch( (source, target, text), factory=factory )
 
     def dispatch(self, *args, **kwa):
         try:
-            for n,h in self.handlers:
+            for n,h in self.plugins:
                 h( *args, **kwa )
         except Exception:
             traceback.print_exc()
