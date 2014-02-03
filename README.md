@@ -61,6 +61,8 @@ BOT IDEAS
           ^ ^
 ```
 
+![sample art](https://raw.github.com/jmkogut/winnie/master/doc/winnie-owl.png?raw=true)
+
  * Respond to emotes, accept that :D and :) are happy, D: and :O and :| and bad. idk.
  * Github postback url support
  * When somebody quotes lyrics, winnie should jump in and continue singing.
