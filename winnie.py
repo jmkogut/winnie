@@ -59,7 +59,12 @@ class IRCClient(irc.IRCClient):
  
     def privmsg(self, user, channel, msg):
         # Send this privmsg off to the Handler
-        self.handler.get().irc( source=user, target=channel, text=msg )
+        self.handler.get().irc(
+                source=user,
+                target=channel,
+                text=msg,
+                factory=self.factory
+        )
         
 
 class IRCClientFactory(protocol.ClientFactory):
@@ -116,6 +121,7 @@ class EchoWS(WebSocketServerProtocol):
     def onConnect(self, request):
         print("Client connecting: {0}".format(request.peer))
         self.factory.irc.send_msg("WebSocket opened at %s"%(request.peer))
+        self.factory.register( self )
 
     def onOpen(self):
         print("WebSocket connection open.")
@@ -124,6 +130,7 @@ class EchoWS(WebSocketServerProtocol):
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))
         self.factory.irc.send_msg("WebSocket closed at %s"%(request.peer))
+        self.factory.unregister( self )
 
     def onMessage(self, m, b):
         print("Text message received: {0}".format(m.decode('utf8')))
@@ -145,7 +152,7 @@ class WSFactory(WebSocketServerFactory):
         if client in self.clients:
             self.clients.remove(client)
 
-    def send_all(self, msg):
+    def send_msg(self, msg):
         for c in self.clients:
             c.sendMessage(msg, False)
 
@@ -167,7 +174,7 @@ if __name__ == "__main__":
     print ' -- HTTP int listening on port 8080'
 
     # WebSocket interface
-    wsf = WSFactory("ws://abzde.com:8888", debug=False)
+    wsf = WSFactory("ws://abzde.com:8888")
     wsf.protocol = EchoWS
     wsf.irc = factory
     factory.wsf = wsf
