@@ -1,3 +1,5 @@
+from winnie import model
+
 from autobahn.twisted.websocket import WebSocketServerProtocol, \
                                        WebSocketServerFactory
 
@@ -7,9 +9,27 @@ class EchoWS(WebSocketServerProtocol):
         self.factory.irc.send_ctrl_msg("WebSocket opened at %s"%(request.peer))
         self.factory.register( self )
 
+
     def onOpen(self):
         print("WebSocket connection open.")
-        self.sendMessage("welcome", False)
+        self.send_names()
+        self.send_recent()
+
+    def send_names(self):
+        names_json = '{"irc_names": [ %s ]}' % ', '.join(['"%s"'%s for s in
+            self.factory.irc.names[self.factory.irc.channels[-1]]])
+        self.sendMessage( names_json, False )
+        print 'names :: %s' % (names_json,)
+
+    def send_recent(self, count=20):
+        print ' -- sending %s latest messages'%(count,)
+        q = model.session.query(model.Intel)
+        for i in q[count:]:
+            msg = '{"irc_event": "<%s> %s: %s" }' % (
+                i.target, i.user.nick, i.text
+            )
+            # print ' event :: %s ' % (msg,)
+            self.sendMessage( msg.encode('ascii'), False )
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))

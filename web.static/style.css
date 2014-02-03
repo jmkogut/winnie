@@ -24,10 +24,28 @@ nav > ul > li > a {
 
   position:absolute; width:100%; height:100%;
 }
+div.sidebar {
+    position: absolute;
+    height: 100%;
+    width: 15%;
+    min-width: 200px;
+    top: 0; right: 0;
+    background: #666;
+    color: #bdbdbd;
+    padding: 0.5em;
+    padding-top: 80px;
+}
+div.sidebar:hover {
+    opacity: 0.78;
+}
 .fill {
     position: absolute;
     width: 100%;
     height: 100%;
+    overflow:hidden;
+}
+.fill > #wrapper {
+    opacity: 0.8;
 }
 .image h1 {
     font-size: 2.8em;

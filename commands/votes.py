@@ -1,6 +1,7 @@
 import re
 from winnie import hook
-from winnie.model import User,Vote,Intel,session
+from winnie import text
+from winnie.model import Vote
 
 VOTES = re.compile(r'((\w+)([+|-]{2}))')
 
@@ -8,11 +9,6 @@ VOTES = re.compile(r'((\w+)([+|-]{2}))')
 def vote( event, client=None, **kw ):
     s,t,m = event
     votes = VOTES.findall( m )
-    u = User.find_by( text.mask_to_nick( s ) )
 
-    for v in votes: # TODO: implement vote security
-        vote = Vote( term=v[1], vote=(1 if v[1]=='++' else -1), voter=u )
-        session.add(vote)
-
-    session.add(u)
-    session.commit()
+    # TODO: write in some checking / user verification on le terms
+    for v in votes: v = Vote.new_vote( text.mask_to_nick(s), v, True )

@@ -12,24 +12,26 @@ This version uses the twisted protocol framework and SQLAlchemy for the orm.
 FEATURES (TODO)
 ---------------
 
- * Web interface, to monitor / interfere with her decision making process.
- * Karma system (++ // --) for when you want to give a user meaningless Internet points.
+ * Web interface, to monitor / interfere with her decision making process. (WIP, but
+   functional.)
+ * Karma system (++ // --) for when you want to give a user meaningless Internet points. (Working.)
  * Console log output hilighting, to differentiate between what's being learned and what is being spoken off of.
- * Use websockets for monitoring, :: http://autobahn.ws/python/tutorials/echo/
+ * Use websockets for monitoring, :: http://autobahn.ws/python/tutorials/echo/ -
+   (Functional)
  * http://yz.mit.edu/wp/web-sockets-tutorial-with-simple-python-server/
  * Xapian guide - http://invisibleroads.com/tutorials/xapian-search-pylons.html
 
 BOT IDEAS
 ---------
 
- * Logging - File, sqlite, http post mayhaps, whoknows
+ * Logging - File, sqlite, http post mayhaps, whoknows - (SQLite only atm)
  * Live code reloading (done - 01/26/2014)
- * web irc client (secondary project there really.)
- * karma - allows you to upvote or downvote a user :: abzde++ or abzde-- and have the recorded votes saved.
+ * web irc client (secondary project there really.) (Working.)
+ * karma - allows you to upvote or downvote a user :: abzde++ or abzde-- and have the recorded votes saved. (Working.)
  * greeter - acknowleges known users with positive karma score. May disparagingly greet users who have been downvoted, 
  * github features, i.e. self-reporting bugs from the users, notifying channels of commits to the repo
- * lastseen & notify - allows you to track when a member was lastseen. Optionally, you can leave a message to be delivered to that user as
-   SOON as he says something. Winnie will continue reporting until PM'd with a confirmation that the msg was received
+ * lastseen & notify - allows you to track when a member was lastseen. Optionally, you can leave a message to be delivered to that user as 
+   SOON as he says something. Winnie will continue reporting until PM'd with a confirmation that the msg was received (Lastseen works, notify doesn't.)
  * google / github search
  * github activity - notify when somebody subscribes/watches the winnie repo
  * Q&A support - learn common questions and try to answer them in the future.

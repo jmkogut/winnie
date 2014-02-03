@@ -9,6 +9,9 @@ def is_hilight( (sr, targ, message) ):
     return False
 
 def is_cmd( prefix, (src, target, message), default=None):
+    # TODO: token assumes you will always say winnie: getfucked #overhere
+    # Obviously this wouldn't happen in a privmsg. fix it
+     
     token = '%s: %s' % (config.NICK, prefix)
     if is_hilight((src,target,message)):
         if message.startswith(token):
@@ -17,5 +20,5 @@ def is_cmd( prefix, (src, target, message), default=None):
     return False
 
 def mask_to_nick( mask ):
-    if not '!' in mask: return mask
-    else: return mask.split('!')[0]
+    if not '!' in mask: return mask.lower()
+    else: return mask.split('!')[0].lower()

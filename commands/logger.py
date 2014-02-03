@@ -6,4 +6,4 @@ from winnie.model import User
 def logger( (src,targ,msg), **kw ):
     if not text.is_hilight((src,targ,msg)):
         User.learned(src, targ, msg)
-        print ' -- [Logged] %s' % msg
+        print ' -- [%s] %s: %s' % (targ, src, msg)

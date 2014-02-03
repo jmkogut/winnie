@@ -18,3 +18,5 @@ CONSOLE_USER = 'jmkogut'
 CONSOLE_PASS = 'lolhax'
 
 VERIFY_VOTES = False # TODO: implement
+
+LASTFM_NP = 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=%s&api_key=%s&format=json'

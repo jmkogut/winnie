@@ -67,14 +67,15 @@ class IRCClient(irc.IRCClient):
 
     def irc_RPL_ENDOFWHO(self, *nargs):
         "Called when WHO output is complete"
-        print 'WHO COMPLETE'
-        print nargs
+        pass
 
     def irc_RPL_NAMREPLY(self, *nargs):
         'Reply for every time you join a chan.'
         chan = nargs[1][2]
         self.names[ chan ] = ([n for n in nargs[1][3].split(' ') if n.strip() != ''])
         print ' -- Users in %s: %s' % (chan, self.names[chan])
+        self.factory.names = self.names
+        self.channels = self.factory.channels
 
     def irc_unknown(self, prefix, command, params):
         "Print all unhandled replies, for debugging."

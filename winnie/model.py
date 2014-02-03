@@ -6,6 +6,8 @@
 # TODO: Add timestamp on intels
 import datetime
 
+from winnie.text import mask_to_nick as mtn
+
 from sqlalchemy import *
 from sqlalchemy.pool import Pool
 from sqlalchemy.event import listens_for
@@ -44,6 +46,7 @@ class User(Base):
 
     @classmethod
     def find_by(cls, nick):
+        nick = mtn( nick )
         try:
             return session.query(User).filter(User.nick == nick).one()
         except NoResultFound, e:
@@ -57,16 +60,30 @@ class User(Base):
         i = Intel(user=u, target=target, text=text)
         session.add(i)
 
-        if save:
-            session.commit()
+        if save: session.commit()
 
 class Vote(Base):
     __tablename__ = 'vote'
 
     id      = Column(Integer, primary_key=True)
+    user    = relationship("User", backref=backref('votes', order_by=id))
+    user_id = Column(Integer, ForeignKey('users.id'))
     term    = Column(String(convert_unicode=True))
     vote    = Column(String(convert_unicode=True))
-    voter   = Column(Integer, ForeignKey('users.id'))
+
+    created = Column(DateTime, default=datetime.datetime.utcnow)
+
+    def __repr__(s): return '<Vote %s>' % s.id,
+
+    @classmethod
+    def new_vote(cls, nick, vote, save=True): # vote = ('winnie++', 'winnie', '++')
+        u = User.find_by(nick)
+        v = Vote(user=u, term=vote[1], vote=vote[2])
+        session.add(v)
+
+        if save: session.commit()
+
+        return v
 
 class Intel(Base):
     __tablename__ = 'intel'

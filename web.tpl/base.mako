@@ -17,72 +17,8 @@
   <meta content="winnie" property="og:title">
   <meta content="An IRC bot with a few features." name="description">
 
-<!--
-  <script type="text/javascript" src="script/dotfiles.js"></script>
-  -->
-
-
-    <script type="text/javascript">
-            var socket = null;
-            var isopen = false;
-
-            window.onload = function() {
-
-            socket = new WebSocket("ws://abzde.com:8888");
-            socket.binaryType = "arraybuffer";
-
-            socket.onopen = function() {
-               console.log("Connected!");
-               isopen = true;
-            }
-
-            socket.onmessage = function(e) {
-               if (typeof e.data == "string") {
-                  console.log("Text message received: " + e.data);
-                  var obj = JSON.parse(e.data);
-                  if (obj.hasOwnProperty('irc_event')) {
-                      var el = document.getElementsByClassName('fill')[0];
-                      el.innerHTML += "<br />" + obj.irc_event;
-                  }
-               } else {
-                  var arr = new Uint8Array(e.data);
-                  var hex = '';
-                  for (var i = 0; i < arr.length; i++) {
-                     hex += ('00' + arr[i].toString(16)).substr(-2);
-                  }
-                  console.log("Binary message received: " + hex);
-               }
-            }
-
-            socket.onclose = function(e) {
-               console.log("Connection closed.");
-               socket = null;
-               isopen = false;
-            }
-         };
-
-         function sendText( txt ) {
-            if (isopen) {
-                socket.send(txt);
-               console.log("Text message sent.");               
-            } else {
-               console.log("Connection not opened.")
-            }
-         };
-
-         function sendBinary() {
-            if (isopen) {
-               var buf = new ArrayBuffer(32);
-               var arr = new Uint8Array(buf);
-               for (i = 0; i < arr.length; ++i) arr[i] = i;
-               socket.send(buf);
-               console.log("Binary message sent.");
-            } else {
-               console.log("Connection not opened.")
-            }
-         };
-      </script>
-
+  <script src="//ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script>
+  <script src="/static/winnie.js"></script>
 
 </head>
 <body>
@@ -106,6 +42,9 @@
         </div>
 
         <%block name="callout"></%block>
+    </div>
+
+    <div class="sidebar">
     </div>
 
     ${self.body()}
