@@ -99,6 +99,24 @@ class Intel(Base):
 
     def __repr__(s): return '<Intel %s>' % (s.id,)
 
+class Trigger(Base):
+    __tablename__ = 'trigger'
+
+    id      = Column(Integer, primary_key=True)
+    trigger = Column(String(convert_unicode=True))
+    action  = relationship("Action", backref=backref('action', order_by=id))
+
+    resp_cat= Column(String(convert_unicode=True), ForeignKey('action.cat'))
+
+class Action(Base):
+    __tablename__ = 'action'
+
+    id      = Column(Integer, primary_key=True)
+    cat     = Column(String(convert_unicode=True))
+    act     = Column(String(convert_unicode=True))
+
+# //////////////////////////////
+
 def Import( n ):
     import re
     reg = re.compile(r'([^ ]+)\s<(\w+):[^ ]+>\s(.*)')
